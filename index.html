@@ -1082,7 +1082,7 @@ function onUp(e) {
     el.classList.remove('dragging');
   } else if (pointerDown && e.type === 'pointerup' &&
              Math.hypot(e.clientX - pointerDown.x, e.clientY - pointerDown.y) < 5 && !pick(e)) {
-    select(null);
+    select(null); setList(false);
   }
   pointerDown = null;
 }
@@ -1098,7 +1098,7 @@ const $ = (id) => document.getElementById(id);
 function select(p) {
   selected = p; paint();
   if (!p) { info.hidden = true; return; }
-  list.hidden = true;
+  setList(false);
   $('i-cat').textContent = p.info.cat;
   $('i-name').textContent = p.info.nome;
   $('i-desc').textContent = p.info.desc;
@@ -1110,7 +1110,7 @@ function select(p) {
   info.scrollTop = 0;
 }
 $('i-close').addEventListener('click', () => select(null));
-$('l-close').addEventListener('click', () => { list.hidden = true; });
+$('l-close').addEventListener('click', () => setList(false));
 
 const items = $('l-items');
 for (const p of [...parts].reverse()) {
@@ -1125,7 +1125,13 @@ for (const p of [...parts].reverse()) {
   b.addEventListener('click', () => { if (!exploded) explode(true); select(p); });
   li.appendChild(b); items.appendChild(li);
 }
-$('btn-list').addEventListener('click', () => { info.hidden = true; list.hidden = !list.hidden; });
+function setList(open) {
+  list.hidden = !open;
+  $('btn-list').setAttribute('aria-expanded', String(open));
+  if (open) { info.hidden = true; selected = null; paint(); }
+}
+$('btn-list').addEventListener('click', () => setList(list.hidden));
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { setList(false); select(null); } });
 
 /* =========================================================
    Gráfico de preço (SVG desenhado à mão)
