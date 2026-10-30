@@ -35,6 +35,7 @@
     --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
     color-scheme: dark;
   }
+  [hidden] { display: none !important; }
   html, body { height: 100%; }
   body {
     margin: 0;
@@ -132,7 +133,13 @@
   .fact p { color: var(--muted); }
 
   /* Gráfico de preço */
-  .price { display: flex; flex-direction: column; gap: 10px; padding-top: 14px; border-top: 1px solid var(--edge); }
+  .price { display: flex; flex-direction: column; gap: 10px; padding: 14px 0; border-top: 1px solid var(--edge); }
+  .switch { display: flex; flex-wrap: wrap; gap: 6px; }
+  .switch button {
+    font: 500 12px/1 var(--mono); color: var(--muted); background: transparent; cursor: pointer;
+    border: 1px solid var(--edge); border-radius: 999px; padding: 7px 10px;
+  }
+  .switch button[aria-pressed="true"] { background: var(--tape); border-color: var(--tape); color: var(--tape-ink); }
   .unit { font: 400 12px/1.4 var(--mono); color: var(--muted); }
   .tabs { display: flex; gap: 4px; padding: 3px; border: 1px solid var(--edge); border-radius: 10px; align-self: flex-start; }
   .tabs button { padding: 8px 11px; font-size: 13px; color: var(--muted); }
@@ -193,6 +200,7 @@
   <button id="btn-explode" class="primary" type="button">Desmontar tudo</button>
   <button id="btn-reset" type="button">Montar</button>
   <button id="btn-list" type="button">Peças</button>
+  <button id="btn-prices" type="button">Preços</button>
 </nav>
 
 <div id="tip" hidden></div>
@@ -206,15 +214,8 @@
     <button class="close" id="i-close" type="button" aria-label="Fechar ficha">Fechar</button>
   </div>
   <p id="i-desc"></p>
-  <dl class="spec">
-    <dt>Função</dt><dd id="i-func"></dd>
-    <dt>Material</dt><dd id="i-mat"></dd>
-  </dl>
-  <div class="fact">
-    <span class="tape">Curiosidade</span>
-    <p id="i-fact"></p>
-  </div>
   <section class="price" id="price" hidden>
+    <div class="switch" id="p-switch" role="group" aria-label="Ver preço de outra peça"></div>
     <div>
       <h3 id="p-title"></h3>
       <div class="unit" id="p-unit"></div>
@@ -226,6 +227,14 @@
     <div class="readout" id="p-read" aria-live="polite"></div>
     <p class="note" id="p-note"></p>
   </section>
+  <dl class="spec">
+    <dt>Função</dt><dd id="i-func"></dd>
+    <dt>Material</dt><dd id="i-mat"></dd>
+  </dl>
+  <div class="fact">
+    <span class="tape">Curiosidade</span>
+    <p id="i-fact"></p>
+  </div>
 </aside>
 
 <aside id="list" class="sheet list" hidden>
@@ -1143,11 +1152,28 @@ function niceStep(range) {
 }
 function fmt(n) { return n.toLocaleString('pt-BR', { maximumFractionDigits: 1 }); }
 
+const SHORT = { soc: 'Processador', ram: 'RAM', armazenamento: 'Armazenamento', tela: 'Tela', bateria: 'Bateria', camera: 'Câmeras' };
+function openPrices(id) {
+  const p = parts.find((q) => q.id === id);
+  if (!exploded) explode(true);
+  select(p);
+  $('price').scrollIntoView({ block: 'start' });
+}
+$('btn-prices').addEventListener('click', () => openPrices(selected && PRECOS[selected.id] ? selected.id : 'soc'));
+
 function showPrice(id) {
   const cfg = PRECOS[id];
   const box = $('price');
   if (!cfg) { box.hidden = true; return; }
   box.hidden = false;
+  const sw = $('p-switch'); sw.replaceChildren();
+  for (const k of Object.keys(PRECOS)) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = SHORT[k] || k;
+    b.setAttribute('aria-pressed', String(k === id));
+    b.addEventListener('click', () => openPrices(k));
+    sw.appendChild(b);
+  }
   $('p-title').textContent = cfg.titulo;
   $('p-unit').textContent = cfg.unidade;
   $('p-note').textContent = cfg.nota;
