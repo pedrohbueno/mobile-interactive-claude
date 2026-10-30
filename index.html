@@ -605,15 +605,15 @@ function roundPath(g, x, y, w, h, r) {
 }
 function circuitBoard(w, h, seed, shields) {
   const g = new THREE.Group();
-  const pcb = mesh(slab(w, h, 0.25, 0.08), mat(0x1c4f36, { roughness: 0.55 }));
+  const pcb = mesh(slab(w, h, 0.25, 0.08), new THREE.MeshStandardMaterial({ map: fitTex(pcbTexture(w, h), w, h), roughness: 0.5, metalness: 0.15 }));
   g.add(pcb);
   for (const [sx, sy, sw, sh] of shields) {
-    const can = mesh(slab(sw, sh, 0.06, 0.1), mat(0xc9ced3, { metalness: 1, roughness: 0.45 }));
+    const can = mesh(slab(sw, sh, 0.06, 0.1), mat(0xd2d6da, { metalness: 1, roughness: 0.42, bumpMap: repeatTex(noTex(noiseTexture(128, 128, 60)), 2, 2), bumpScale: 0.6 }));
     can.position.set(sx, sy, 0.09); g.add(can);
   }
   let s = seed;
   const rnd = () => (s = (s * 9301 + 49297) % 233280) / 233280;
-  for (let i = 0; i < 18; i++) {
+  for (let i = 0; i < 12; i++) {
     const cw = 0.08 + rnd() * 0.22, ch = 0.06 + rnd() * 0.18;
     const gold = rnd() < 0.25;
     const b = mesh(new THREE.BoxGeometry(cw, ch, 0.04), mat(gold ? 0xd0a64a : 0x1d2024, { metalness: gold ? 1 : 0.3, roughness: 0.35 }));
@@ -663,6 +663,141 @@ function batteryTexture() {
   });
 }
 
+const noTex = (t) => { t.colorSpace = THREE.NoColorSpace; return t; };
+const repeatTex = (t, u, v) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(u, v); return t; };
+// Ajusta a textura às coordenadas da peça (em cm), cobrindo a face inteira
+const fitTex = (t, w, h) => { t.repeat.set(1 / w, 1 / h); t.offset.set(0.5, 0.5); return t; };
+let seedN = 1;
+const rand = () => (seedN = (seedN * 16807) % 2147483647) / 2147483647;
+
+function brushedTexture() {
+  return canvasTex(1024, 128, (g, w, h) => {
+    g.fillStyle = '#9a9fa6'; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 1400; i++) {
+      const a = rand() * 0.1;
+      g.fillStyle = rand() < 0.5 ? `rgba(255,255,255,${a})` : `rgba(0,0,0,${a})`;
+      g.fillRect(rand() * w, rand() * h, 60 + rand() * 500, 1);
+    }
+  });
+}
+function noiseTexture(size, base, amp) {
+  return canvasTex(size, size, (g, w, h) => {
+    const img = g.createImageData(w, h);
+    for (let i = 0; i < img.data.length; i += 4) {
+      const n = base + (rand() - 0.5) * amp;
+      img.data[i] = img.data[i + 1] = img.data[i + 2] = n; img.data[i + 3] = 255;
+    }
+    g.putImageData(img, 0, 0);
+  });
+}
+function pcbTexture(w, h) {
+  const px = 170;
+  return canvasTex(Math.round(w * px), Math.round(h * px), (g, W2, H2) => {
+    const grd = g.createLinearGradient(0, 0, W2, H2);
+    grd.addColorStop(0, '#1b4a33'); grd.addColorStop(1, '#123726');
+    g.fillStyle = grd; g.fillRect(0, 0, W2, H2);
+    g.lineCap = 'round'; g.lineJoin = 'round';
+    for (let i = 0; i < 90; i++) {
+      let x = rand() * W2, y = rand() * H2;
+      g.strokeStyle = `rgba(90,170,115,${0.25 + rand() * 0.3})`; g.lineWidth = 1.5 + rand() * 3;
+      g.beginPath(); g.moveTo(x, y);
+      for (let k = 0; k < 3; k++) {
+        const len = 20 + rand() * 140, d = Math.floor(rand() * 4);
+        if (d === 0) x += len; else if (d === 1) y += len; else if (d === 2) { x += len * 0.7; y += len * 0.7; } else { x += len * 0.7; y -= len * 0.7; }
+        g.lineTo(x, y);
+      }
+      g.stroke();
+    }
+    for (let i = 0; i < 160; i++) {
+      const x = rand() * W2, y = rand() * H2;
+      g.fillStyle = '#c9a24a'; g.beginPath(); g.arc(x, y, 3.2, 0, 7); g.fill();
+      g.fillStyle = '#0d2a1c'; g.beginPath(); g.arc(x, y, 1.4, 0, 7); g.fill();
+    }
+    for (let i = 0; i < 70; i++) {
+      const x = rand() * W2, y = rand() * H2, vert = rand() < 0.5;
+      g.fillStyle = '#d6b25a';
+      if (vert) { g.fillRect(x, y, 7, 9); g.fillRect(x, y + 15, 7, 9); } else { g.fillRect(x, y, 9, 7); g.fillRect(x + 15, y, 9, 7); }
+    }
+    g.strokeStyle = 'rgba(235,240,228,0.75)'; g.fillStyle = 'rgba(235,240,228,0.85)';
+    g.lineWidth = 1.5; g.font = '600 13px ui-monospace, monospace';
+    const pre = ['C', 'R', 'U', 'L', 'J', 'FL', 'TP'];
+    for (let i = 0; i < 22; i++) {
+      const x = rand() * (W2 - 60), y = 20 + rand() * (H2 - 30);
+      g.fillText(pre[Math.floor(rand() * pre.length)] + Math.floor(1 + rand() * 480), x, y);
+      if (rand() < 0.35) g.strokeRect(x - 4, y + 5, 28 + rand() * 50, 18 + rand() * 30);
+    }
+    g.strokeStyle = '#c9a24a'; g.lineWidth = 6; g.strokeRect(3, 3, W2 - 6, H2 - 6);
+  });
+}
+function chipTexture(w, h, lines) {
+  const px = 260;
+  return canvasTex(Math.round(w * px), Math.round(h * px), (g, W2, H2) => {
+    g.fillStyle = '#16181b'; g.fillRect(0, 0, W2, H2);
+    for (let i = 0; i < 2500; i++) { g.fillStyle = `rgba(255,255,255,${rand() * 0.035})`; g.fillRect(rand() * W2, rand() * H2, 2, 2); }
+    g.fillStyle = '#6e757d'; g.textAlign = 'center';
+    lines.forEach((t, i) => {
+      g.font = `${i === 0 ? 600 : 400} ${Math.round(H2 / (i === 0 ? 7 : 10))}px ui-monospace, monospace`;
+      g.fillText(t, W2 / 2, H2 * 0.38 + i * H2 * 0.16);
+    });
+    g.beginPath(); g.arc(W2 * 0.12, H2 * 0.14, H2 * 0.035, 0, 7); g.fill();
+  });
+}
+function grilleTexture() {
+  return canvasTex(256, 112, (g, w, h) => {
+    g.fillStyle = '#2b2e33'; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#0a0b0c';
+    for (let y = 8; y < h; y += 12) for (let x = 8 + ((y / 12) % 2) * 6; x < w; x += 12) { g.beginPath(); g.arc(x, y, 3.4, 0, 7); g.fill(); }
+  });
+}
+function backTextTexture() {
+  return canvasTex(512, 160, (g, w, h) => {
+    g.clearRect(0, 0, w, h);
+    g.fillStyle = 'rgba(220,228,240,0.55)'; g.textAlign = 'center';
+    g.font = '600 40px "Chakra Petch", system-ui, sans-serif'; g.fillText('CD-1', w / 2, 62);
+    g.font = '400 20px ui-monospace, monospace'; g.fillText('Celular Desmontável · Modelo A3141', w / 2, 108);
+    g.fillText('Montado em São Paulo', w / 2, 138);
+  });
+}
+
+// Moldura: anel com perfil arredondado por fora e parede reta por dentro.
+// Cada ponto do contorno recebe o mesmo perfil, empurrado para fora pela normal do contorno.
+function frameGeometry(W, H, R, t, d, rr) {
+  const wi = W / 2 - t, hi = H / 2 - t, ri = R - t, seg = 22;
+  const path = [];
+  for (const [cx, cy, a0] of [[wi - ri, hi - ri, 0], [-(wi - ri), hi - ri, Math.PI / 2], [-(wi - ri), -(hi - ri), Math.PI], [wi - ri, -(hi - ri), Math.PI * 1.5]]) {
+    for (let k = 0; k <= seg; k++) {
+      const a = a0 + (k / seg) * Math.PI / 2, nx = Math.cos(a), ny = Math.sin(a);
+      path.push({ x: cx + nx * ri, y: cy + ny * ri, nx, ny });
+    }
+  }
+  const h = d / 2, prof = [[0, h, 0, 1], [t - rr, h, 0, 1]];
+  for (let k = 0; k <= 10; k++) { const a = Math.PI / 2 * (1 - k / 10); prof.push([t - rr + rr * Math.cos(a), h - rr + rr * Math.sin(a), Math.cos(a), Math.sin(a)]); }
+  for (let k = 0; k <= 10; k++) { const a = -Math.PI / 2 * (k / 10); prof.push([t - rr + rr * Math.cos(a), -h + rr + rr * Math.sin(a), Math.cos(a), Math.sin(a)]); }
+  prof.push([t - rr, -h, 0, -1], [0, -h, 0, -1], [0, -h, -1, 0], [0, h, -1, 0]);
+  const N = path.length, M = prof.length, pos = [], nor = [], uv = [], idx = [];
+  let len = 0;
+  for (let i = 0; i <= N; i++) {
+    const p = path[i % N];
+    if (i > 0) { const q = path[i - 1]; len += Math.hypot(p.x - q.x, p.y - q.y); }
+    for (let j = 0; j < M; j++) {
+      const [o, z, no, nz] = prof[j];
+      pos.push(p.x + p.nx * o, p.y + p.ny * o, z);
+      nor.push(p.nx * no, p.ny * no, nz);
+      uv.push(len / 5, j / (M - 1));
+    }
+  }
+  for (let i = 0; i < N; i++) for (let j = 0; j < M - 1; j++) {
+    const a = i * M + j, b = (i + 1) * M + j;
+    idx.push(a, a + 1, b, b, a + 1, b + 1);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  g.setIndex(idx);
+  return g;
+}
+
 /* =========================================================
    Peças
    ========================================================= */
@@ -689,9 +824,14 @@ const FRAME_COLOR = 0x9a9ea4;
 // Tampa traseira com ilha das câmeras
 {
   const g = new THREE.Group();
-  g.add(mesh(slab(W, H, R, 0.06, { bevel: 0.025 }), mat(0x33405a, { roughness: 0.42, metalness: 0.12 })));
-  const island = mesh(slab(2.95, 2.95, 0.7, 0.07, { bevel: 0.03 }), mat(0x2c384f, { roughness: 0.2, metalness: 0.2 }));
+  const frost = repeatTex(noTex(noiseTexture(256, 128, 70)), 0.5, 0.5);
+  g.add(mesh(slab(W - 0.2, H - 0.2, R - 0.1, 0.06, { bevel: 0.025 }),
+    mat(0x3a4866, { roughness: 0.55, metalness: 0.1, bumpMap: frost, bumpScale: 0.35 })));
+  const island = mesh(slab(2.95, 2.95, 0.7, 0.07, { bevel: 0.03 }),
+    new THREE.MeshPhysicalMaterial({ color: 0x2c384f, roughness: 0.12, metalness: 0.2, clearcoat: 1, clearcoatRoughness: 0.05 }));
   island.position.set(-2.0, 5.8, -0.06); g.add(island);
+  const engraving = mesh(new THREE.PlaneGeometry(3.4, 1.06), new THREE.MeshStandardMaterial({ map: backTextTexture(), transparent: true, roughness: 0.6 }));
+  engraving.rotation.y = Math.PI; engraving.position.set(0, -5.6, -0.032); g.add(engraving);
   addPart('tampa', g, v(0, 0, -0.42), v(0, 0, -5.4));
 }
 
@@ -714,8 +854,12 @@ const FRAME_COLOR = 0x9a9ea4;
   for (const [x, y, r] of [[-0.52, 0.52, 0.44], [-0.52, -0.52, 0.4], [0.55, 0.0, 0.4]]) {
     const ring = cyl(r, 0.5, 0xb7bcc4, titanium); ring.position.set(x, y, -0.12); g.add(ring);
     const barrel = cyl(r - 0.07, 0.52, 0x0b0d10, { metalness: 0.5, roughness: 0.4 }); barrel.position.set(x, y, -0.12); g.add(barrel);
-    const glass = mesh(new THREE.CircleGeometry(r - 0.13, 48), mat(0x060a14, { metalness: 0.2, roughness: 0.02, emissive: 0x08122a }));
+    const glass = mesh(new THREE.CircleGeometry(r - 0.13, 48), new THREE.MeshPhysicalMaterial({
+      color: 0x04060c, metalness: 0.1, roughness: 0.02, clearcoat: 1, emissive: 0x000000,
+      iridescence: 1, iridescenceIOR: 1.7, iridescenceThicknessRange: [180, 520] }));
     glass.position.set(x, y, -0.385); glass.rotation.y = Math.PI; g.add(glass);
+    const inner = mesh(new THREE.RingGeometry(r - 0.27, r - 0.24, 40), mat(0x30343a, { metalness: 0.8, roughness: 0.3, side: THREE.DoubleSide }));
+    inner.position.set(x, y, -0.387); inner.rotation.y = Math.PI; g.add(inner);
   }
   const flash = cyl(0.14, 0.32, 0xfff1c8, { roughness: 0.2, emissive: 0x3a2f10 }); flash.position.set(0.62, 0.8, -0.1); g.add(flash);
   const lidar = cyl(0.12, 0.3, 0x111111, { roughness: 0.15 }); lidar.position.set(0.62, -0.8, -0.1); g.add(lidar);
@@ -733,16 +877,19 @@ const FRAME_COLOR = 0x9a9ea4;
   addPart('bateria', g, v(0, -1.6, -0.06), v(0, 0, -1.5));
 }
 
-// Chassi (moldura) com bordas arredondadas, faixas de antena e furos
+// Chassi (moldura): anel de metal escovado com faixas de antena e furos
 {
   const g = new THREE.Group();
-  g.add(mesh(slab(W, H, R, 0.8, { bevel: 0.13, hole: { w: W - 0.34, h: H - 0.34, r: R - 0.17 } }), mat(FRAME_COLOR, titanium)));
+  const brushed = repeatTex(brushedTexture(), 1, 1);
+  g.add(mesh(frameGeometry(W, H, R, 0.16, 0.8, 0.14),
+    new THREE.MeshStandardMaterial({ color: 0xffffff, map: brushed, bumpMap: brushed, bumpScale: 0.5, metalness: 0.9, roughness: 0.36 })));
+  const bandM = mat(0x2e3135, { roughness: 0.6 });
   for (const x of [-1, 1]) for (const y of [-5.6, 5.4]) {
-    const band = mesh(new THREE.BoxGeometry(0.19, 0.09, 0.66), mat(0x2e3135, { roughness: 0.6 }));
+    const band = mesh(new THREE.BoxGeometry(0.17, 0.09, 0.5), bandM);
     band.position.set(x * 3.52, y, 0); g.add(band);
   }
   for (const y of [-1, 1]) {
-    const band = mesh(new THREE.BoxGeometry(0.09, 0.19, 0.66), mat(0x2e3135, { roughness: 0.6 }));
+    const band = mesh(new THREE.BoxGeometry(0.09, 0.17, 0.5), bandM);
     band.position.set(y * 2.5, y * 7.42, 0); g.add(band);
   }
   const holeM = mat(0x050505, { roughness: 1 });
@@ -761,17 +908,19 @@ addPart('placa', circuitBoard(3.8, 4.5, 7, [[0.9, -1.4, 1.6, 1.2], [-0.9, 1.4, 1
 {
   const g = new THREE.Group();
   g.add(mesh(slab(1.25, 1.25, 0.06, 0.1), mat(0x17191c, { metalness: 0.4, roughness: 0.3 })));
-  const die = mesh(new THREE.BoxGeometry(0.7, 0.7, 0.02), mat(0x5b6470, { metalness: 0.9, roughness: 0.2 }));
+  const die = mesh(new THREE.BoxGeometry(0.7, 0.7, 0.02), mat(0x5b6470, { metalness: 0.9, roughness: 0.2,
+    bumpMap: repeatTex(noTex(noiseTexture(64, 128, 90)), 1, 1), bumpScale: 0.3 }));
   die.position.z = 0.055; g.add(die);
   addPart('soc', g, v(1.0, 5.3, 0.04), v(0, 0, 1.9));
 }
 {
   const g = new THREE.Group();
-  g.add(mesh(slab(1.25, 1.25, 0.06, 0.06), mat(0x15171a, { metalness: 0.3, roughness: 0.45 })));
-  const dot = mesh(new THREE.CircleGeometry(0.05, 16), mat(0x9aa0a6)); dot.position.set(-0.48, 0.48, 0.031); g.add(dot);
+  g.add(mesh(slab(1.25, 1.25, 0.06, 0.06), new THREE.MeshStandardMaterial({
+    map: fitTex(chipTexture(1.25, 1.25, ['LPDDR5X', '12 GB · 9600', 'Y42T 2614']), 1.25, 1.25), metalness: 0.3, roughness: 0.45 })));
   addPart('ram', g, v(1.0, 5.3, 0.13), v(0, 0, 2.7));
 }
-addPart('armazenamento', mesh(slab(1.15, 0.85, 0.05, 0.1), mat(0x202226, { metalness: 0.3, roughness: 0.4 })), v(2.2, 3.4, 0.04), v(0, 0, 1.9));
+addPart('armazenamento', mesh(slab(1.15, 0.85, 0.05, 0.1), new THREE.MeshStandardMaterial({
+  map: fitTex(chipTexture(1.15, 0.85, ['UFS 4.1', '256 GB', 'K3F8 2611']), 1.15, 0.85), metalness: 0.3, roughness: 0.4 })), v(2.2, 3.4, 0.04), v(0, 0, 1.9));
 
 // Placa inferior, cabo flexível e porta USB-C
 addPart('subplaca', circuitBoard(6.0, 1.4, 31, [[-0.4, 0, 1.0, 0.8]]), v(0, -6.2, -0.05), v(0, 0, 1.0));
@@ -796,7 +945,7 @@ addPart('subplaca', circuitBoard(6.0, 1.4, 31, [[-0.4, 0, 1.0, 0.8]]), v(0, -6.2
 {
   const g = new THREE.Group();
   g.add(mesh(slab(1.9, 1.0, 0.2, 0.26, { bevel: 0.03 }), mat(0x18191b, { roughness: 0.7 })));
-  const grille = mesh(new THREE.PlaneGeometry(1.4, 0.6), mat(0x3a3d42, { roughness: 0.9, metalness: 0.4 }));
+  const grille = mesh(new THREE.PlaneGeometry(1.4, 0.6), new THREE.MeshStandardMaterial({ map: grilleTexture(), roughness: 0.8, metalness: 0.4 }));
   grille.position.z = 0.132; g.add(grille);
   addPart('altofalante', g, v(2.2, -6.2, 0.15), v(0, 0, 2.4));
 }
@@ -814,13 +963,13 @@ addPart('auricular', mesh(slab(1.5, 0.24, 0.1, 0.12), mat(0x3b3f45, { metalness:
 // Tela e vidro
 {
   const g = new THREE.Group();
-  g.add(mesh(slab(W - 0.24, H - 0.24, R - 0.1, 0.08), mat(0x050608, { roughness: 0.4 })));
+  g.add(mesh(slab(W - 0.34, H - 0.34, R - 0.16, 0.08), mat(0x050608, { roughness: 0.4 })));
   const screen = mesh(new THREE.PlaneGeometry(6.66, 14.3),
     new THREE.MeshBasicMaterial({ map: screenTexture(), transparent: true, toneMapped: false }));
   screen.position.z = 0.042; g.add(screen);
   addPart('tela', g, v(0, 0, 0.34), v(0, 0, 4.6));
 }
-addPart('vidro', mesh(slab(W - 0.02, H - 0.02, R - 0.01, 0.07, { bevel: 0.03 }),
+addPart('vidro', mesh(slab(W - 0.2, H - 0.2, R - 0.1, 0.07, { bevel: 0.03 }),
   new THREE.MeshPhysicalMaterial({ color: 0xffffff, transparent: true, opacity: 0.16, roughness: 0.03, metalness: 0, clearcoat: 1, depthWrite: false })),
   v(0, 0, 0.42), v(0, 0, 5.9));
 
@@ -828,10 +977,10 @@ addPart('vidro', mesh(slab(W - 0.02, H - 0.02, R - 0.01, 0.07, { bevel: 0.03 }),
 addPart('sim', mesh(slab(0.1, 1.6, 0.04, 0.26), mat(0xa3a9b0, titanium)), v(-3.62, 2.6, 0), v(-1.8, 0, 0));
 addPart('volume', (() => {
   const g = new THREE.Group();
-  for (const y of [0.55, -0.55]) { const b = mesh(slab(0.12, 0.95, 0.05, 0.26, { bevel: 0.03 }), mat(FRAME_COLOR, titanium)); b.position.y = y; g.add(b); }
+  for (const y of [0.55, -0.55]) { const b = mesh(slab(0.12, 0.95, 0.05, 0.26, { bevel: 0.03 }), mat(FRAME_COLOR, { ...titanium, roughness: 0.4 })); b.position.y = y; g.add(b); }
   return g;
 })(), v(3.62, 3.6, 0), v(1.8, 0, 0));
-addPart('energia', mesh(slab(0.12, 1.2, 0.05, 0.26, { bevel: 0.03 }), mat(FRAME_COLOR, titanium)), v(3.62, 1.1, 0), v(1.8, 0, 0));
+addPart('energia', mesh(slab(0.12, 1.2, 0.05, 0.26, { bevel: 0.03 }), mat(FRAME_COLOR, { ...titanium, roughness: 0.4 })), v(3.62, 1.1, 0), v(1.8, 0, 0));
 
 /* =========================================================
    Câmera e controles
