@@ -6,7 +6,7 @@ Um celular em 3D que você desmonta no navegador, no estilo *teardown*.
 - **Toque ou clique numa peça** para abrir uma ficha explicando o que ela é, para que serve, do que é feita e uma curiosidade.
 - **Arraste o fundo** para girar o aparelho; use a pinça (celular) ou a roda do mouse para zoom.
 - **Desmontar tudo** separa todas as camadas de uma vez; **Montar** coloca tudo de volta.
-- **Peças** abre a lista com os 21 componentes.
+- **Peças** abre a lista com os 22 componentes, com os nomes usados em assistência técnica (vibracall, inlay, sim tray, flex main, coaxial…).
 - **Preços** vai direto para o gráfico de preço (processador, RAM, armazenamento, tela, bateria e câmeras).
 - **Gráficos de preço** aparecem na ficha do processador, da RAM, do armazenamento, da tela, da bateria e das câmeras, com abas "mais potentes" e "custo-benefício" desde 2024.
 

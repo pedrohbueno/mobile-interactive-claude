@@ -228,6 +228,7 @@
     <p class="note" id="p-note"></p>
   </section>
   <dl class="spec">
+    <dt>Também chamado</dt><dd id="i-aka"></dd>
     <dt>Função</dt><dd id="i-func"></dd>
     <dt>Material</dt><dd id="i-mat"></dd>
   </dl>
@@ -263,107 +264,112 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
    Ficha de cada peça
    ========================================================= */
 const INFO = {
-  vidro: { nome: 'Vidro frontal', cat: 'Proteção',
+  vidro: { nome: 'Lente frontal (cover glass)', aka: 'Vidro, lente, cover glass', cat: 'Proteção',
     desc: 'A camada de vidro que você toca. Fica colada por cima da tela e protege tudo o que está embaixo.',
     func: 'Proteger a tela contra riscos e quedas e deixar o toque do dedo chegar ao sensor.',
     mat: 'Vidro aluminossilicato temperado quimicamente.',
     fato: 'Ele é endurecido num banho de sal quente: íons de potássio, maiores, entram no lugar dos de sódio e deixam a superfície "comprimida", o que dificulta trincas.' },
-  tela: { nome: 'Tela OLED', cat: 'Tela',
+  tela: { nome: 'Display OLED', aka: 'Frontal, tela, display com touch', cat: 'Tela',
     desc: 'O painel que forma a imagem. Junto dele vem o digitalizador, a camada que percebe onde você tocou.',
     func: 'Mostrar a imagem e detectar o toque (sensor capacitivo).',
     mat: 'Camadas orgânicas emissoras de luz sobre vidro ou plástico flexível.',
     fato: 'Cada pixel de um OLED acende sozinho. No preto, o pixel fica apagado, por isso temas escuros economizam bateria nesse tipo de tela.' },
-  chassi: { nome: 'Chassi (moldura)', cat: 'Estrutura',
+  chassi: { nome: 'Aro / chassi (mid-frame)', aka: 'Aro, carcaça, mid-frame', cat: 'Estrutura',
     desc: 'O esqueleto do celular. Todas as peças se prendem nele, e as bordas são a parte que você segura.',
     func: 'Dar rigidez ao aparelho e servir de antena para o sinal do celular.',
     mat: 'Alumínio ou titânio usinado, com faixas de plástico.',
     fato: 'As listrinhas de plástico na borda não são enfeite: elas dividem o metal em pedaços que funcionam como antenas separadas.' },
-  placa: { nome: 'Placa-mãe', cat: 'Processamento',
+  placa: { nome: 'Placa-mãe (main board)', aka: 'Placa principal, logic board, PCB', cat: 'Processamento',
     desc: 'A placa de circuito principal, onde ficam o processador, a memória e os chips de rádio. As caixinhas prateadas são blindagens contra interferência.',
     func: 'Ligar todos os componentes entre si e distribuir energia.',
     mat: 'Placa de fibra de vidro com 10 ou mais camadas de trilhas de cobre.',
     fato: 'Em muitos aparelhos a placa-mãe é um "sanduíche" de duas placas empilhadas, para caber mais coisa em menos espaço e sobrar lugar para a bateria.' },
-  soc: { nome: 'Processador (SoC)', cat: 'Processamento',
+  soc: { nome: 'SoC (processador)', aka: 'Processador, CPU, chipset, AP', cat: 'Processamento',
     desc: 'O "cérebro" do celular. SoC significa sistema em um chip: CPU, gráficos, inteligência artificial e modem juntos numa peça só.',
     func: 'Rodar o sistema e os apps, processar fotos e vídeos.',
     mat: 'Silício, com bilhões de transistores (processos de 3 nm e, a partir de 2026, 2 nm).',
     fato: 'Neste modelo, como em muitos celulares, a memória RAM fica empilhada em cima do processador (formato PoP). Arraste a RAM para ver o chip de baixo.' },
-  ram: { nome: 'Memória RAM', cat: 'Processamento',
+  ram: { nome: 'RAM LPDDR5X (PoP)', aka: 'Memória RAM, DRAM', cat: 'Processamento',
     desc: 'A memória de trabalho: guarda o que os apps abertos estão usando agora. Fica soldada por cima do processador.',
     func: 'Dar acesso rápido aos dados em uso. Apaga tudo quando o celular desliga.',
     mat: 'Chips de DRAM do tipo LPDDR5X (ou LPDDR4X em aparelhos mais baratos).',
     fato: 'Os data centers de IA passaram a disputar a mesma fabricação de memória. Em 2026 isso fez o preço da RAM de celular quase dobrar em um único trimestre.' },
-  armazenamento: { nome: 'Memória de armazenamento', cat: 'Processamento',
+  armazenamento: { nome: 'Memória UFS', aka: 'Armazenamento, memória interna, NAND', cat: 'Processamento',
     desc: 'O chip onde ficam guardados o sistema, os apps, as fotos e as mensagens.',
     func: 'Guardar dados mesmo com o celular desligado.',
     mat: 'Memória flash NAND (padrão UFS).',
     fato: 'Os 128 ou 256 GB anunciados não aparecem todos para você: parte do espaço vai para o sistema e para reservas internas do próprio chip.' },
-  bateria: { nome: 'Bateria', cat: 'Energia',
+  bateria: { nome: 'Bateria Li-Po', aka: 'Célula, battery pack', cat: 'Energia',
     desc: 'A maior peça interna. Fica presa com fitas adesivas que se soltam puxando a aba preta.',
     func: 'Armazenar energia, em geral entre 4.000 e 6.000 mAh, a cerca de 3,87 V.',
     mat: 'Íons de lítio em células de polímero; as mais novas usam ânodo de silício-carbono.',
     fato: 'Perfurar ou dobrar uma bateria de lítio pode causar fogo. Em reparos de verdade, ela é a peça que se manuseia com mais cuidado.' },
-  camera: { nome: 'Câmeras traseiras', cat: 'Câmera',
+  camera: { nome: 'Módulo de câmera traseira', aka: 'Câmera principal, câmera traseira', cat: 'Câmera',
     desc: 'Um módulo com várias câmeras: a principal, a grande-angular e uma teleobjetiva. O flash fica ao lado.',
     func: 'Tirar fotos e gravar vídeo com diferentes enquadramentos.',
     mat: 'Sensores de imagem CMOS, lentes de plástico e vidro, moldura metálica.',
     fato: 'A estabilização óptica (OIS) usa pequenos ímãs e bobinas que movem a lente milhares de vezes por segundo para compensar o tremor da mão.' },
-  frontal: { nome: 'Câmera frontal', cat: 'Câmera',
+  frontal: { nome: 'Câmera frontal (selfie)', aka: 'Câmera de selfie', cat: 'Câmera',
     desc: 'A câmera pequena virada para você, atrás do furo no topo da tela.',
     func: 'Selfies, chamadas de vídeo e, em alguns modelos, desbloqueio pelo rosto.',
     mat: 'Sensor CMOS pequeno e lente de plástico.',
     fato: 'Em celulares com "furo" na tela, a câmera fica atrás de um recorte no próprio painel OLED.' },
-  auricular: { nome: 'Alto-falante auricular', cat: 'Áudio',
+  auricular: { nome: 'Auricular (earpiece)', aka: 'Alto-falante auricular, receiver', cat: 'Áudio',
     desc: 'O alto-falante que fica no seu ouvido durante uma ligação.',
     func: 'Reproduzir a voz nas chamadas e servir de segundo canal no som estéreo.',
     mat: 'Ímã, bobina e membrana em um invólucro plástico.',
     fato: 'Quando o som sai em estéreo, um lado vem desse alto-falante e o outro do alto-falante de baixo.' },
-  altofalante: { nome: 'Alto-falante principal', cat: 'Áudio',
+  altofalante: { nome: 'Alto-falante (buzzer)', aka: 'Campainha, buzzer, loudspeaker', cat: 'Áudio',
     desc: 'O alto-falante maior, na parte de baixo do aparelho. O som sai pelos furinhos da borda.',
     func: 'Tocar música, vídeos, alarmes e o viva-voz.',
     mat: 'Ímã de neodímio, bobina e membrana em uma caixa vedada.',
     fato: 'A caixinha em volta do alto-falante funciona como caixa de som: o ar preso dentro dela ajuda a reforçar os graves.' },
-  vibracao: { nome: 'Motor de vibração', cat: 'Controles',
+  vibracao: { nome: 'Vibracall', aka: 'Motor de vibração, motor háptico, LRA', cat: 'Controles',
     desc: 'O componente que faz o celular vibrar e dá aqueles "toques" ao digitar.',
     func: 'Criar vibrações para avisos e respostas táteis.',
     mat: 'Massa metálica presa a molas, movida por uma bobina (motor linear).',
     fato: 'Celulares antigos giravam um peso descentralizado. Os motores lineares atuais vibram em linha reta e conseguem parar quase na hora, por isso o toque parece "seco".' },
-  subplaca: { nome: 'Placa inferior', cat: 'Conectividade',
-    desc: 'Uma placa menor na parte de baixo, ligada à placa-mãe pelo cabo flexível.',
+  subplaca: { nome: 'Sub-placa (placa de carga)', aka: 'Sub-board, placa do conector', cat: 'Conectividade',
+    desc: 'Uma placa menor na parte de baixo, ligada à placa-mãe pelo flex main e pelo cabo coaxial.',
     func: 'Concentrar a porta de carga, os microfones e parte das antenas.',
     mat: 'Placa de circuito de fibra de vidro.',
     fato: 'Separar essa parte deixa o conserto mais barato: se a porta de carga estraga, troca-se só a placa inferior.' },
-  flex: { nome: 'Cabo flexível', cat: 'Conectividade',
-    desc: 'A fita cor de âmbar que liga a placa inferior à placa-mãe, passando ao lado da bateria.',
+  flex: { nome: 'Flex main', aka: 'Flex de interligação, cabo flat da placa', cat: 'Conectividade',
+    desc: 'A fita cor de âmbar que liga a sub-placa à placa-mãe, passando ao lado da bateria. Encaixa nas duas pontas por conectores de pressão (BTB).',
     func: 'Levar energia, áudio e sinais de antena entre as duas placas.',
     mat: 'Trilhas de cobre sobre filme de poliimida.',
     fato: 'A cor âmbar é do próprio plástico poliimida, o mesmo das fitas usadas em reparos de eletrônicos porque aguenta mais de 250 °C.' },
-  usb: { nome: 'Porta USB-C', cat: 'Conectividade',
+  coaxial: { nome: 'Cabo coaxial (antena)', aka: 'Coaxial, cabo de antena RF', cat: 'Conectividade',
+    desc: 'Um cabo fininho e redondo que leva o sinal de rádio da placa-mãe até as antenas na parte de baixo do aparelho.',
+    func: 'Transportar o sinal de 4G/5G sem perda e sem interferência.',
+    mat: 'Fio central de cobre, isolante, malha metálica e capa plástica; pontas com conectores de encaixe (U.FL).',
+    fato: 'É blindado como o cabo da TV a cabo, só que com menos de 1 mm de espessura. Um coaxial mal encaixado é causa comum de "celular sem sinal" depois de um conserto.' },
+  usb: { nome: 'Conector de carga USB-C', aka: 'Porta de carga, conector USB', cat: 'Conectividade',
     desc: 'O conector onde você liga o cabo de carga.',
     func: 'Carregar a bateria e transferir dados.',
     mat: 'Carcaça de aço com contatos banhados a ouro.',
     fato: 'O USB-C funciona dos dois lados porque os contatos são espelhados; o carregador e o celular "conversam" para decidir quanta potência usar.' },
-  bobina: { nome: 'Bobina de carga sem fio', cat: 'Energia',
-    desc: 'Uma espiral de fio de cobre colada atrás da bateria.',
-    func: 'Receber energia do carregador por indução, sem cabo.',
+  bobina: { nome: 'Inlay (NFC + carga sem fio)', aka: 'Bobina de carga, antena NFC, wireless charging coil', cat: 'Energia',
+    desc: 'Módulo colado atrás da bateria: a espiral grande de cobre recebe energia do carregador e uma antena menor faz o NFC.',
+    func: 'Carregar sem fio (padrão Qi) e fazer pagamentos por aproximação (NFC).',
     mat: 'Fio de cobre enrolado sobre uma folha de ferrite.',
     fato: 'A energia passa por um campo magnético. Por isso a tampa traseira de celulares com carga sem fio costuma ser de vidro ou plástico: metal atrapalharia o campo.' },
-  tampa: { nome: 'Tampa traseira', cat: 'Proteção',
+  tampa: { nome: 'Tampa traseira (back cover)', aka: 'Tampa, back glass', cat: 'Proteção',
     desc: 'A parte de trás do aparelho, com a ilha elevada das câmeras. Para abrir o celular, ela é aquecida para amolecer a cola.',
     func: 'Fechar e proteger o interior, deixando passar sinal de rádio e carga sem fio.',
     mat: 'Vidro fosco ou plástico.',
     fato: 'O acabamento fosco é feito corroendo a superfície do vidro, o que espalha a luz e esconde marcas de dedo.' },
-  sim: { nome: 'Bandeja do chip SIM', cat: 'Conectividade',
+  sim: { nome: 'Gaveta do chip (SIM tray)', aka: 'Bandeja do chip, porta-chip', cat: 'Conectividade',
     desc: 'A gavetinha lateral que se abre com uma agulha.',
     func: 'Segurar o chip da operadora (nano-SIM).',
     mat: 'Aço inoxidável ou alumínio com vedação de borracha.',
     fato: 'Muitos aparelhos novos usam eSIM, um chip soldado na placa que é configurado por software, e alguns já nem têm bandeja.' },
-  volume: { nome: 'Botões de volume', cat: 'Controles',
+  volume: { nome: 'Botões de volume', aka: 'Teclas de volume, flex de volume', cat: 'Controles',
     desc: 'Os botões na lateral para aumentar e diminuir o som.',
     func: 'Ajustar o volume e, com a câmera aberta, servir de disparador.',
     mat: 'Metal, apoiado em pequenos interruptores de cúpula.',
     fato: 'Embaixo de cada botão há uma pequena cúpula de metal que "estala" ao ser pressionada. É ela que dá a sensação de clique.' },
-  energia: { nome: 'Botão de energia', cat: 'Controles',
+  energia: { nome: 'Botão power', aka: 'Botão liga/desliga, tecla power', cat: 'Controles',
     desc: 'O botão que liga, desliga e bloqueia a tela.',
     func: 'Ligar e desligar o aparelho e bloquear a tela.',
     mat: 'Metal sobre um interruptor de cúpula.',
@@ -679,15 +685,43 @@ const fitTex = (t, w, h) => { t.repeat.set(1 / w, 1 / h); t.offset.set(0.5, 0.5)
 let seedN = 1;
 const rand = () => (seedN = (seedN * 16807) % 2147483647) / 2147483647;
 
-function brushedTexture() {
-  return canvasTex(1024, 128, (g, w, h) => {
-    g.fillStyle = '#9a9fa6'; g.fillRect(0, 0, w, h);
-    for (let i = 0; i < 1400; i++) {
-      const a = rand() * 0.1;
-      g.fillStyle = rand() < 0.5 ? `rgba(255,255,255,${a})` : `rgba(0,0,0,${a})`;
-      g.fillRect(rand() * w, rand() * h, 60 + rand() * 500, 1);
+// Metal escovado do aro: riscos finos ao longo do contorno (u) e chanfros polidos.
+// A coordenada v percorre o perfil: ~0,07–0,17 é o chanfro de cima, ~0,75–0,85 o de baixo.
+function brushedMaps() {
+  const W2 = 2048, H2 = 256;
+  const streaks = (g, light, dark, n) => {
+    for (let i = 0; i < n; i++) {
+      const y = rand() * H2, len = 40 + Math.pow(rand(), 2) * 900, a = rand();
+      g.fillStyle = rand() < 0.5 ? `rgba(${light},${a * 0.1})` : `rgba(${dark},${a * 0.1})`;
+      g.fillRect(rand() * W2, y, len, rand() < 0.85 ? 1 : 2);
     }
+  };
+  const bands = (g, color) => {
+    for (const [v0, v1] of [[0.07, 0.17], [0.75, 0.85]]) {
+      const y0 = (1 - v1) * H2, y1 = (1 - v0) * H2;
+      const grd = g.createLinearGradient(0, y0, 0, y1);
+      grd.addColorStop(0, 'rgba(0,0,0,0)'); grd.addColorStop(0.5, color); grd.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = grd; g.fillRect(0, y0, W2, y1 - y0);
+    }
+  };
+  const map = canvasTex(W2, H2, (g) => {
+    g.fillStyle = '#a3a4a7'; g.fillRect(0, 0, W2, H2);
+    for (let i = 0; i < 40; i++) {              // manchas suaves de usinagem
+      const x = rand() * W2, r = 80 + rand() * 260;
+      const grd = g.createRadialGradient(x, H2 / 2, 0, x, H2 / 2, r);
+      grd.addColorStop(0, `rgba(${rand() < 0.5 ? '255,250,240' : '60,62,66'},0.06)`); grd.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = grd; g.fillRect(x - r, 0, r * 2, H2);
+    }
+    streaks(g, '255,255,255', '30,32,36', 5000);
+    bands(g, 'rgba(255,255,255,0.22)');
   });
+  const rough = noTex(canvasTex(W2, H2, (g) => {
+    g.fillStyle = 'rgb(105,105,105)'; g.fillRect(0, 0, W2, H2);   // ~0,41
+    streaks(g, '190,190,190', '40,40,40', 5000);
+    bands(g, 'rgba(25,25,25,0.85)');                              // chanfro bem liso
+  }));
+  for (const t of [map, rough]) { t.wrapS = THREE.RepeatWrapping; t.anisotropy = 16; }
+  return { map, rough };
 }
 function noiseTexture(size, base, amp) {
   return canvasTex(size, size, (g, w, h) => {
@@ -889,9 +923,13 @@ const FRAME_COLOR = 0x9a9ea4;
 // Chassi (moldura): anel de metal escovado com faixas de antena e furos
 {
   const g = new THREE.Group();
-  const brushed = repeatTex(brushedTexture(), 1, 1);
+  const brushed = brushedMaps();
   g.add(mesh(frameGeometry(W, H, R, 0.16, 0.8, 0.14),
-    new THREE.MeshStandardMaterial({ color: 0xffffff, map: brushed, bumpMap: brushed, bumpScale: 0.5, metalness: 0.9, roughness: 0.36 })));
+    new THREE.MeshPhysicalMaterial({
+      color: 0xd9d6d0, map: brushed.map, roughnessMap: brushed.rough, roughness: 1, metalness: 1,
+      bumpMap: brushed.rough, bumpScale: 0.25,
+      anisotropy: 0.85, anisotropyRotation: 0,          // reflexo esticado na direção do escovado
+      clearcoat: 0.25, clearcoatRoughness: 0.35 })));
   const bandM = mat(0x2e3135, { roughness: 0.6 });
   for (const x of [-1, 1]) for (const y of [-5.6, 5.4]) {
     const band = mesh(new THREE.BoxGeometry(0.17, 0.09, 0.5), bandM);
@@ -941,6 +979,19 @@ addPart('subplaca', circuitBoard(6.0, 1.4, 31, [[-0.4, 0, 1.0, 0.8]]), v(0, -6.2
     const con = mesh(new THREE.BoxGeometry(0.7, 0.45, 0.08), mat(0x1a1b1d, { roughness: 0.5 })); con.position.set(0, y, 0.03); g.add(con);
   }
   addPart('flex', g, v(2.85, -1.65, 0.22), v(0, 0, 3.4));
+}
+{
+  const g = new THREE.Group();
+  const route = new THREE.CatmullRomCurve3([
+    v(-2.5, -5.75, 0.0), v(-3.12, -5.1, 0.02), v(-3.16, -2.0, 0.02), v(-3.14, 1.9, 0.02), v(-2.2, 2.55, 0.0), v(-0.35, 3.05, -0.05),
+  ]);
+  g.add(mesh(new THREE.TubeGeometry(route, 140, 0.035, 10, false), mat(0x26282b, { roughness: 0.55 })));
+  for (const t of [0, 1]) {
+    const end = route.getPoint(t);
+    const plug = mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.06, 20), mat(0xd9b45a, { metalness: 1, roughness: 0.25 }));
+    plug.rotation.x = Math.PI / 2; plug.position.copy(end); g.add(plug);
+  }
+  addPart('coaxial', g, v(0, 0, 0.21), v(-0.6, 0, 3.0));
 }
 {
   const g = new THREE.Group();
@@ -1102,6 +1153,7 @@ function select(p) {
   $('i-cat').textContent = p.info.cat;
   $('i-name').textContent = p.info.nome;
   $('i-desc').textContent = p.info.desc;
+  $('i-aka').textContent = p.info.aka;
   $('i-func').textContent = p.info.func;
   $('i-mat').textContent = p.info.mat;
   $('i-fact').textContent = p.info.fato;
@@ -1158,7 +1210,7 @@ function niceStep(range) {
 }
 function fmt(n) { return n.toLocaleString('pt-BR', { maximumFractionDigits: 1 }); }
 
-const SHORT = { soc: 'Processador', ram: 'RAM', armazenamento: 'Armazenamento', tela: 'Tela', bateria: 'Bateria', camera: 'Câmeras' };
+const SHORT = { soc: 'SoC', ram: 'RAM', armazenamento: 'UFS', tela: 'Display', bateria: 'Bateria', camera: 'Câmera' };
 function openPrices(id) {
   const p = parts.find((q) => q.id === id);
   if (!exploded) explode(true);
