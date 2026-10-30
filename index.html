@@ -16,15 +16,20 @@
      ferramentas embaixo, ficha da peça à direita (ou de baixo, no celular). */
   :root {
     --mat: #163830;
-    --mat-deep: #0f2823;
     --line: rgba(214, 240, 229, 0.06);
     --line-major: rgba(214, 240, 229, 0.13);
     --ink: #e9f2ed;
     --muted: #9db8ad;
-    --panel: rgba(12, 30, 26, 0.92);
+    --faint: rgba(214, 240, 229, 0.16);
+    --panel: rgba(12, 30, 26, 0.94);
     --edge: rgba(214, 240, 229, 0.14);
     --tape: #f2b03d;
     --tape-ink: #2a1a00;
+    --s1: #f2b03d;
+    --s2: #5fd4c0;
+    --s3: #ff8a73;
+    --s4: #8fb3ff;
+    --s5: #d3a6ff;
     --display: "Chakra Petch", "Arial Narrow", system-ui, sans-serif;
     --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
     --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
@@ -79,7 +84,7 @@
     backdrop-filter: blur(8px);
     max-width: calc(100% - 32px);
   }
-  .tools button, .list button, .close {
+  .tools button, .list button, .close, .tabs button {
     font: 600 14px/1 var(--display); letter-spacing: 0.03em; color: var(--ink);
     background: transparent; border: 1px solid transparent; border-radius: 9px;
     padding: 11px 14px; cursor: pointer; white-space: nowrap;
@@ -99,9 +104,9 @@
     position: fixed; z-index: 4;
     top: calc(16px + env(safe-area-inset-top, 0px));
     right: max(16px, env(safe-area-inset-right, 0px));
-    width: min(360px, calc(100% - 32px));
+    width: min(400px, calc(100% - 32px));
     max-height: calc(100% - 120px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
-    overflow-y: auto;
+    overflow-y: auto; overscroll-behavior: contain;
     background: var(--panel); border: 1px solid var(--edge); border-radius: 16px;
     backdrop-filter: blur(10px);
     padding: 18px 18px 20px;
@@ -110,10 +115,9 @@
   }
   @keyframes rise { from { transform: translateY(8px); opacity: .6; } to { transform: none; opacity: 1; } }
   .sheet-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-  .cat {
-    font: 500 11px/1 var(--mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted);
-  }
+  .cat { font: 500 11px/1 var(--mono); text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
   .sheet h2 { margin: 6px 0 0; font: 700 24px/1.1 var(--display); text-wrap: balance; }
+  .sheet h3 { margin: 0; font: 600 17px/1.2 var(--display); letter-spacing: 0.02em; }
   .close { padding: 8px 10px; border-color: var(--edge); font-size: 13px; }
   .close:hover { background: rgba(214,240,229,0.08); }
   .sheet p { margin: 0; line-height: 1.55; color: var(--ink); }
@@ -127,20 +131,48 @@
   }
   .fact p { color: var(--muted); }
 
+  /* Gráfico de preço */
+  .price { display: flex; flex-direction: column; gap: 10px; padding-top: 14px; border-top: 1px solid var(--edge); }
+  .unit { font: 400 12px/1.4 var(--mono); color: var(--muted); }
+  .tabs { display: flex; gap: 4px; padding: 3px; border: 1px solid var(--edge); border-radius: 10px; align-self: flex-start; }
+  .tabs button { padding: 8px 11px; font-size: 13px; color: var(--muted); }
+  .tabs button[aria-selected="true"] { background: rgba(214,240,229,0.12); color: var(--ink); }
+  .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .chart text { font-family: var(--mono); font-size: 10px; fill: var(--muted); }
+  .chart .grid { stroke: var(--faint); stroke-width: 1; }
+  .chart .pt { cursor: pointer; }
+  .chart .pt:focus-visible { outline: none; stroke: var(--ink); stroke-width: 2.5; }
+  .chart .hit { fill: transparent; cursor: pointer; }
+  .legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; }
+  .legend li { display: flex; align-items: center; gap: 6px; font-size: 12.5px; min-width: 0; }
+  .legend svg { flex: none; }
+  .legend em { font-style: normal; color: var(--muted); font-size: 11.5px; }
+  .readout {
+    font-size: 13px; line-height: 1.5; padding: 10px 12px; border-radius: 10px;
+    background: rgba(214,240,229,0.06); min-height: 1.5em;
+  }
+  .readout strong { font-weight: 600; }
+  .readout a { color: var(--tape); }
+  .readout .ex { color: var(--tape); font: 500 11px/1 var(--mono); text-transform: uppercase; letter-spacing: 0.08em; }
+  .note { font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+  .key { display: flex; flex-wrap: wrap; gap: 4px 14px; font: 400 11.5px/1.4 var(--mono); color: var(--muted); }
+  .key span { display: inline-flex; align-items: center; gap: 6px; }
+
   .list h2 { font-size: 20px; }
   .list ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
   .list ol button {
-    width: 100%; text-align: left; display: flex; justify-content: space-between; gap: 12px;
+    width: 100%; text-align: left; display: flex; justify-content: space-between; align-items: center; gap: 12px;
     font: 500 14px/1.2 var(--body); letter-spacing: 0; padding: 10px;
   }
   .list ol button:hover { background: rgba(214,240,229,0.08); }
-  .list ol span { font: 400 11px/1.3 var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .list ol span { font: 400 11px/1.3 var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; text-align: right; }
+  .list ol span b { color: var(--tape); font-weight: 500; }
 
   @media (max-width: 640px) {
     .head p { font-size: 12.5px; }
     .sheet {
       top: auto; left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px));
-      width: auto; bottom: calc(80px + env(safe-area-inset-bottom, 0px)); max-height: 48%;
+      width: auto; bottom: calc(80px + env(safe-area-inset-bottom, 0px)); max-height: 58%;
     }
     .scale { display: none; }
     .tools button { padding: 11px 12px; font-size: 13px; }
@@ -152,7 +184,7 @@
 
 <header class="head">
   <h1>Celular Desmontável</h1>
-  <p>Arraste as peças para tirá-las do lugar. Toque numa peça para ver o que ela faz. Arraste o fundo para girar; use a pinça ou a roda do mouse para zoom.</p>
+  <p>Arraste as peças para tirá-las do lugar. Toque numa peça para ver o que ela faz e quanto custa. Arraste o fundo para girar; use a pinça ou a roda do mouse para zoom.</p>
 </header>
 
 <div class="scale" aria-hidden="true"><i></i>1 cm</div>
@@ -182,6 +214,18 @@
     <span class="tape">Curiosidade</span>
     <p id="i-fact"></p>
   </div>
+  <section class="price" id="price" hidden>
+    <div>
+      <h3 id="p-title"></h3>
+      <div class="unit" id="p-unit"></div>
+    </div>
+    <div class="tabs" id="p-tabs" role="tablist" aria-label="Grupo de modelos"></div>
+    <div class="chart" id="p-chart"></div>
+    <ul class="legend" id="p-legend"></ul>
+    <div class="key" id="p-key"></div>
+    <div class="readout" id="p-read" aria-live="polite"></div>
+    <p class="note" id="p-note"></p>
+  </section>
 </aside>
 
 <aside id="list" class="sheet list" hidden>
@@ -206,7 +250,9 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-/* ---------- Ficha de cada peça ---------- */
+/* =========================================================
+   Ficha de cada peça
+   ========================================================= */
 const INFO = {
   vidro: { nome: 'Vidro frontal', cat: 'Proteção',
     desc: 'A camada de vidro que você toca. Fica colada por cima da tela e protege tudo o que está embaixo.',
@@ -224,32 +270,37 @@ const INFO = {
     mat: 'Alumínio ou titânio usinado, com faixas de plástico.',
     fato: 'As listrinhas de plástico na borda não são enfeite: elas dividem o metal em pedaços que funcionam como antenas separadas.' },
   placa: { nome: 'Placa-mãe', cat: 'Processamento',
-    desc: 'A placa de circuito principal, onde ficam o processador, a memória e os chips de rádio.',
+    desc: 'A placa de circuito principal, onde ficam o processador, a memória e os chips de rádio. As caixinhas prateadas são blindagens contra interferência.',
     func: 'Ligar todos os componentes entre si e distribuir energia.',
     mat: 'Placa de fibra de vidro com 10 ou mais camadas de trilhas de cobre.',
     fato: 'Em muitos aparelhos a placa-mãe é um "sanduíche" de duas placas empilhadas, para caber mais coisa em menos espaço e sobrar lugar para a bateria.' },
   soc: { nome: 'Processador (SoC)', cat: 'Processamento',
-    desc: 'O "cérebro" do celular. SoC significa sistema em um chip: CPU, gráficos, inteligência artificial e outras partes juntas.',
+    desc: 'O "cérebro" do celular. SoC significa sistema em um chip: CPU, gráficos, inteligência artificial e modem juntos numa peça só.',
     func: 'Rodar o sistema e os apps, processar fotos e vídeos.',
-    mat: 'Silício, com bilhões de transistores.',
-    fato: 'É comum a memória RAM ficar empilhada diretamente em cima do processador, num formato chamado PoP (package on package).' },
+    mat: 'Silício, com bilhões de transistores (processos de 3 nm e, a partir de 2026, 2 nm).',
+    fato: 'Neste modelo, como em muitos celulares, a memória RAM fica empilhada em cima do processador (formato PoP). Arraste a RAM para ver o chip de baixo.' },
+  ram: { nome: 'Memória RAM', cat: 'Processamento',
+    desc: 'A memória de trabalho: guarda o que os apps abertos estão usando agora. Fica soldada por cima do processador.',
+    func: 'Dar acesso rápido aos dados em uso. Apaga tudo quando o celular desliga.',
+    mat: 'Chips de DRAM do tipo LPDDR5X (ou LPDDR4X em aparelhos mais baratos).',
+    fato: 'Os data centers de IA passaram a disputar a mesma fabricação de memória. Em 2026 isso fez o preço da RAM de celular quase dobrar em um único trimestre.' },
   armazenamento: { nome: 'Memória de armazenamento', cat: 'Processamento',
     desc: 'O chip onde ficam guardados o sistema, os apps, as fotos e as mensagens.',
     func: 'Guardar dados mesmo com o celular desligado.',
     mat: 'Memória flash NAND (padrão UFS).',
     fato: 'Os 128 ou 256 GB anunciados não aparecem todos para você: parte do espaço vai para o sistema e para reservas internas do próprio chip.' },
   bateria: { nome: 'Bateria', cat: 'Energia',
-    desc: 'A maior peça interna. Normalmente fica presa com fitas adesivas que se soltam puxando.',
-    func: 'Armazenar energia, em geral entre 3.000 e 5.000 mAh, a cerca de 3,85 V.',
-    mat: 'Íons de lítio em células de polímero, dentro de uma bolsa laminada.',
+    desc: 'A maior peça interna. Fica presa com fitas adesivas que se soltam puxando a aba preta.',
+    func: 'Armazenar energia, em geral entre 4.000 e 6.000 mAh, a cerca de 3,87 V.',
+    mat: 'Íons de lítio em células de polímero; as mais novas usam ânodo de silício-carbono.',
     fato: 'Perfurar ou dobrar uma bateria de lítio pode causar fogo. Em reparos de verdade, ela é a peça que se manuseia com mais cuidado.' },
   camera: { nome: 'Câmeras traseiras', cat: 'Câmera',
-    desc: 'Um módulo com várias câmeras: a principal, a grande-angular e, às vezes, uma teleobjetiva. O flash fica ao lado.',
+    desc: 'Um módulo com várias câmeras: a principal, a grande-angular e uma teleobjetiva. O flash fica ao lado.',
     func: 'Tirar fotos e gravar vídeo com diferentes enquadramentos.',
     mat: 'Sensores de imagem CMOS, lentes de plástico e vidro, moldura metálica.',
     fato: 'A estabilização óptica (OIS) usa pequenos ímãs e bobinas que movem a lente milhares de vezes por segundo para compensar o tremor da mão.' },
   frontal: { nome: 'Câmera frontal', cat: 'Câmera',
-    desc: 'A câmera pequena virada para você, no topo da tela.',
+    desc: 'A câmera pequena virada para você, atrás do furo no topo da tela.',
     func: 'Selfies, chamadas de vídeo e, em alguns modelos, desbloqueio pelo rosto.',
     mat: 'Sensor CMOS pequeno e lente de plástico.',
     fato: 'Em celulares com "furo" na tela, a câmera fica atrás de um recorte no próprio painel OLED.' },
@@ -259,7 +310,7 @@ const INFO = {
     mat: 'Ímã, bobina e membrana em um invólucro plástico.',
     fato: 'Quando o som sai em estéreo, um lado vem desse alto-falante e o outro do alto-falante de baixo.' },
   altofalante: { nome: 'Alto-falante principal', cat: 'Áudio',
-    desc: 'O alto-falante maior, na parte de baixo do aparelho.',
+    desc: 'O alto-falante maior, na parte de baixo do aparelho. O som sai pelos furinhos da borda.',
     func: 'Tocar música, vídeos, alarmes e o viva-voz.',
     mat: 'Ímã de neodímio, bobina e membrana em uma caixa vedada.',
     fato: 'A caixinha em volta do alto-falante funciona como caixa de som: o ar preso dentro dela ajuda a reforçar os graves.' },
@@ -269,10 +320,15 @@ const INFO = {
     mat: 'Massa metálica presa a molas, movida por uma bobina (motor linear).',
     fato: 'Celulares antigos giravam um peso descentralizado. Os motores lineares atuais vibram em linha reta e conseguem parar quase na hora, por isso o toque parece "seco".' },
   subplaca: { nome: 'Placa inferior', cat: 'Conectividade',
-    desc: 'Uma placa menor na parte de baixo, ligada à placa-mãe por um cabo flexível.',
+    desc: 'Uma placa menor na parte de baixo, ligada à placa-mãe pelo cabo flexível.',
     func: 'Concentrar a porta de carga, os microfones e parte das antenas.',
-    mat: 'Placa de circuito e cabo flexível de poliimida.',
+    mat: 'Placa de circuito de fibra de vidro.',
     fato: 'Separar essa parte deixa o conserto mais barato: se a porta de carga estraga, troca-se só a placa inferior.' },
+  flex: { nome: 'Cabo flexível', cat: 'Conectividade',
+    desc: 'A fita cor de âmbar que liga a placa inferior à placa-mãe, passando ao lado da bateria.',
+    func: 'Levar energia, áudio e sinais de antena entre as duas placas.',
+    mat: 'Trilhas de cobre sobre filme de poliimida.',
+    fato: 'A cor âmbar é do próprio plástico poliimida, o mesmo das fitas usadas em reparos de eletrônicos porque aguenta mais de 250 °C.' },
   usb: { nome: 'Porta USB-C', cat: 'Conectividade',
     desc: 'O conector onde você liga o cabo de carga.',
     func: 'Carregar a bateria e transferir dados.',
@@ -284,7 +340,7 @@ const INFO = {
     mat: 'Fio de cobre enrolado sobre uma folha de ferrite.',
     fato: 'A energia passa por um campo magnético. Por isso a tampa traseira de celulares com carga sem fio costuma ser de vidro ou plástico: metal atrapalharia o campo.' },
   tampa: { nome: 'Tampa traseira', cat: 'Proteção',
-    desc: 'A parte de trás do aparelho. Para abrir o celular, normalmente ela é aquecida para amolecer a cola.',
+    desc: 'A parte de trás do aparelho, com a ilha elevada das câmeras. Para abrir o celular, ela é aquecida para amolecer a cola.',
     func: 'Fechar e proteger o interior, deixando passar sinal de rádio e carga sem fio.',
     mat: 'Vidro fosco ou plástico.',
     fato: 'O acabamento fosco é feito corroendo a superfície do vidro, o que espalha a luz e esconde marcas de dedo.' },
@@ -305,11 +361,191 @@ const INFO = {
     fato: 'Em alguns celulares esse botão também tem um leitor de impressão digital embutido.' },
 };
 
-/* ---------- Cena ---------- */
+/* =========================================================
+   Preços dos componentes
+   Ponto: { y, min?, max?, txt, m (modelo), f (fonte) }  -> dado publicado
+          { y, ex: 1, m? }                              -> valor de exemplo (ilustrativo)
+   ========================================================= */
+const FONTES = {
+  wcSD:  { t: 'Wccftech, out/2025 (estimativas de Abhishek Yadav)', u: 'https://wccftech.com/snapdragon-8-elite-gen-5-price-per-unit-significantly-higher-than-snapdragon-8-elite/' },
+  wcSD3: { t: 'Wccftech, jan/2024', u: 'https://wccftech.com/snapdragon-8-gen-3-estimated-to-cost-200' },
+  wcMT:  { t: 'Wccftech, out/2025 (estimativas de Abhishek Yadav)', u: 'https://wccftech.com/dimensity-9500-more-than-50-percent-cheaper-than-the-snapdragon-8-elite-gen-5' },
+  nbc:   { t: 'Notebookcheck, set/2026 (via TaiSounds)', u: 'https://www.notebookcheck.net/Could-smartphones-get-even-more-expensive-2nm-flagship-chips-reportedly-top-200.1401843.0.html' },
+  apf:   { t: 'Applesfera, jan/2026', u: 'https://www.applesfera.com/rumores/iphone-18-tendra-cerebro-caro-historia-apple-informe-calcula-que-fabricarlo-cuesta-casi-doble-que-anterior' },
+  tfEx:  { t: 'TrendForce, nov/2025 (via Chosun Biz)', u: 'https://www.trendforce.com/news/2025/11/18/news-samsung-reportedly-cuts-exynos-2600-price-by-20-30-below-qualcomm-to-spur-adoption/' },
+  m1: { t: 'TrendForce, 08/01/2024', u: 'https://www.trendforce.com/presscenter/news/20240108-11988.html' },
+  m2: { t: 'TrendForce, 26/03/2024', u: 'https://trendforce.com/presscenter/news/20240326-12093.html' },
+  m3: { t: 'TrendForce via TechPowerUp, 27/06/2024', u: 'https://techpowerup.com/323946/dram-prices-expected-to-increase-by-8-13-in-q3' },
+  m4: { t: 'TrendForce via I-Connect007, 10/10/2024', u: 'https://iconnect007.com/article/142592/buyers-focus-on-inventory-reduction-slowing-demand-growth-constrains-q4-memory-price-increases/142589/ein' },
+  m5: { t: 'TrendForce, 30/12/2024', u: 'https://www.trendforce.com/presscenter/news/20241230-12424.html' },
+  m6: { t: 'TrendForce, 25/03/2025', u: 'https://www.trendforce.com/presscenter/news/20250325-12528.html' },
+  m7: { t: 'TrendForce via I-Connect007, 07/07/2025', u: 'https://iconnect007.com/article/146029/transition-between-dram-generations-drives-diverging-3q25-price-trends-consumer-ddr4-prices-expected-to-surge-over-40/146026/ein' },
+  m8: { t: 'TrendForce, 24/09/2025', u: 'https://www.trendforce.com/presscenter/news/20250924-12733.html' },
+  m9: { t: 'TrendForce via I-Connect007, 02/02/2026', u: 'https://iconnect007.com/article/148637/1q26-memory-price-outlook-sharply-upgraded-as-qoq-increases-hit-record-highs/148634/pcb' },
+  m10: { t: 'TrendForce, 14/05/2026', u: 'https://www.trendforce.com/presscenter/news/20260514-13044.html' },
+  mr: { t: 'MacRumors, 10/07/2026 (Counterpoint e WSJ)', u: 'https://macrumors.com/2026/07/10/iphone-18-pro-max-costs-could-rise' },
+};
+
+const ANOS = ['2024', '2025', '2026'];
+const ex = (...ys) => ys.map((y) => (y == null ? null : { y, ex: 1 }));
+
+// Índice de preço a partir das variações trimestrais (4T23 = 100)
+function indice(qoq) {
+  let v = 100;
+  return qoq.map(([pct, faixa, fonte, estimado]) => {
+    v *= 1 + pct / 100;
+    const y = Math.round(v * 10) / 10;
+    return estimado ? { y, ex: 1, m: faixa } : { y, txt: `índice ${y.toLocaleString('pt-BR')} · variação no trimestre: ${faixa}`, f: fonte };
+  });
+}
+const TRI = ['1T24', '2T24', '3T24', '4T24', '1T25', '2T25', '3T25', '4T25', '1T26', '2T26'];
+
+const PRECOS = {
+  soc: {
+    titulo: 'Quanto custa o processador',
+    unidade: 'US$ por chip · estimativa do custo para o fabricante do celular · eixo: ano em que o chip chega aos celulares',
+    x: ['2024', '2025', '2026', '2027*'],
+    nota: '* 2027: estimativas feitas antes do lançamento. Ninguém publica preço oficial de processador; os valores reais vêm de vazamentos e analistas e variam com o volume de cada contrato. Tendência clara: com os chips de 3 e 2 nm, o topo de linha ficou bem mais caro a cada geração.',
+    vistas: [
+      { nome: 'Mais potentes', series: [
+        { nome: 'Qualcomm Snapdragon 8', pontos: [
+          { y: 185, min: 170, max: 200, txt: 'US$ 170–200', m: 'Snapdragon 8 Gen 3', f: 'wcSD' },
+          { y: 220, txt: 'US$ 220 ou mais', m: 'Snapdragon 8 Elite', f: 'wcSD' },
+          { y: 260, min: 240, max: 280, txt: 'US$ 240–280', m: 'Snapdragon 8 Elite Gen 5', f: 'wcSD' },
+          { y: 250, min: 240, max: 260, txt: 'US$ 240–260 (antes do lançamento)', m: 'Snapdragon 8 Elite Gen 6 Pro', f: 'nbc' } ] },
+        { nome: 'Apple A (iPhone)', pontos: [
+          ...ex(120),
+          { y: 155, txt: 'cerca de US$ 155', m: 'Apple A19', f: 'apf' },
+          { y: 270, min: 260, max: 280, txt: 'US$ 260–280 (estimativas de duas fontes)', m: 'Apple A20 / A20 Pro', f: 'apf' },
+          null ] },
+        { nome: 'Samsung Exynos 2x00', pontos: [
+          ...ex(150, 175),
+          { y: 235, min: 210, max: 260, txt: 'US$ 20–30 abaixo do Snapdragon da mesma geração (≈ US$ 210–260)', m: 'Exynos 2600', f: 'tfEx' },
+          null ] },
+        { nome: 'MediaTek Dimensity 9000', pontos: [
+          { y: 125, min: 120, max: 130, txt: 'US$ 120–130', m: 'Dimensity 9300', f: 'wcMT' },
+          { y: 155, txt: 'cerca de US$ 155', m: 'Dimensity 9400', f: 'wcMT' },
+          { y: 190, min: 180, max: 200, txt: 'US$ 180–200', m: 'Dimensity 9500', f: 'wcMT' },
+          { y: 220, txt: 'até US$ 220 (antes do lançamento)', m: 'Dimensity 9600 Pro', f: 'nbc' } ] },
+        { nome: 'Google Tensor', pontos: [...ex(90, 105, 125), null] },
+      ] },
+      { nome: 'Custo-benefício', series: [
+        { nome: 'Snapdragon 8s', pontos: [...ex(110, 120, 145), null] },
+        { nome: 'Dimensity 8000', pontos: [...ex(75, 82, 100), null] },
+        { nome: 'Snapdragon 7', pontos: [...ex(55, 60, 72), null] },
+        { nome: 'Exynos 1x80', pontos: [...ex(42, 45, 54), null] },
+        { nome: 'Dimensity 7000', pontos: [...ex(35, 38, 46), null] },
+      ] },
+    ],
+  },
+  ram: {
+    titulo: 'Quanto custa a RAM',
+    unidade: 'Índice de preço de contrato da RAM de celular (4º tri de 2023 = 100)',
+    x: TRI,
+    nota: 'Calculado com o ponto médio de cada previsão trimestral da TrendForce. Onde a TrendForce só disse a direção (sem número), usamos um valor de exemplo, e os trimestres seguintes partem dele. Em 2024 a TrendForce deu um número único para toda a RAM de celular. Para ter ideia em dólares: o WSJ estimou que a RAM de um iPhone passaria de US$ 39 para US$ 145 com a alta de 2026 (via MacRumors).',
+    fontesExtra: ['mr'],
+    vistas: [
+      { nome: 'Topo e entrada', series: [
+        { nome: 'LPDDR5X (topo de linha)', pontos: indice([
+          [20.5, '+18 a +23% (RAM de celular em geral)', 'm1'], [5.5, '+3 a +8% (RAM de celular em geral)', 'm2'],
+          [5.5, '+3 a +8% (RAM de celular em geral)', 'm3'], [0, 'estável', 'm4'], [-5.5, '−3 a −8%', 'm5'],
+          [2.5, '0 a +5%', 'm6'], [7.5, '+5 a +10%', 'm7'], [10, 'alta, sem número divulgado; usamos +10%', null, 1],
+          [90, 'cerca de +90%', 'm9'], [80.5, '+78 a +83%', 'm10'] ]) },
+        { nome: 'LPDDR4X (aparelhos de entrada)', pontos: indice([
+          [20.5, '+18 a +23% (RAM de celular em geral)', 'm1'], [5.5, '+3 a +8% (RAM de celular em geral)', 'm2'],
+          [0, 'menor alta ou queda, sem número; usamos 0%', null, 1], [-7.5, '−5 a −10%', 'm4'], [-10.5, '−8 a −13%', 'm5'],
+          [-2.5, '0 a −5%', 'm6'], [25.5, '+23 a +28%', 'm7'], [10, 'mais de +10% (usamos +10%)', 'm8'],
+          [90, 'cerca de +90%', 'm9'], [72.5, '+70 a +75%', 'm10'] ]) },
+      ] },
+    ],
+  },
+  armazenamento: {
+    titulo: 'Quanto custa o armazenamento',
+    unidade: 'US$ por chip de memória flash · custo para o fabricante',
+    x: ANOS,
+    nota: 'Só um ponto é publicado: a Counterpoint estimou que a memória de 1 TB do iPhone 18 Pro Max passa de US$ 250. O resto é exemplo, mas segue a direção real: a TrendForce previu alta de 55–60% no preço da memória flash no 1º tri de 2026 e de até 75% no 2º.',
+    vistas: [
+      { nome: 'Mais rápidos', series: [
+        { nome: 'UFS 4 · 1 TB', pontos: [...ex(70, 75), { y: 250, txt: 'mais de US$ 250', m: 'Flash de 1 TB do iPhone 18 Pro Max', f: 'mr' }] },
+        { nome: 'UFS 4 · 512 GB', pontos: ex(36, 38, 110) },
+        { nome: 'UFS 4 · 256 GB', pontos: ex(19, 20, 58) },
+      ] },
+      { nome: 'Custo-benefício', series: [
+        { nome: 'UFS 3.1 · 256 GB', pontos: ex(15, 16, 45) },
+        { nome: 'UFS 3.1 · 128 GB', pontos: ex(8, 8.5, 24) },
+        { nome: 'UFS 2.2 · 128 GB', pontos: ex(7, 7.5, 20) },
+      ] },
+    ],
+  },
+  tela: {
+    titulo: 'Quanto custa a tela',
+    unidade: 'US$ por painel de ~6,7" · custo para o fabricante',
+    x: ANOS,
+    nota: 'Valores de exemplo. Os fabricantes de tela não divulgam preços, mas a tendência geral é de queda leve, porque fábricas chinesas aumentaram muito a produção de OLED.',
+    vistas: [
+      { nome: 'Mais avançadas', series: [
+        { nome: 'Samsung Display LTPO', pontos: ex(85, 80, 78) },
+        { nome: 'LG Display LTPO', pontos: ex(82, 78, 75) },
+        { nome: 'BOE LTPO', pontos: ex(70, 64, 60) },
+        { nome: 'TCL CSOT LTPO', pontos: ex(62, 57, 53) },
+        { nome: 'Visionox LTPO', pontos: ex(60, 55, 51) },
+      ] },
+      { nome: 'Custo-benefício', series: [
+        { nome: 'Samsung Display OLED rígido', pontos: ex(28, 25, 24) },
+        { nome: 'BOE OLED flexível LTPS', pontos: ex(32, 28, 26) },
+        { nome: 'Tianma OLED rígido', pontos: ex(22, 20, 19) },
+        { nome: 'TCL CSOT OLED rígido', pontos: ex(21, 19, 18) },
+        { nome: 'LCD IPS (vários)', pontos: ex(11, 10, 10) },
+      ] },
+    ],
+  },
+  bateria: {
+    titulo: 'Quanto custa a bateria',
+    unidade: 'US$ por célula de bateria de celular · custo para o fabricante',
+    x: ANOS,
+    nota: 'Valores de exemplo. A tendência geral: o lítio ficou mais barato em 2024–2025, e as baterias de silício-carbono, que guardam mais energia no mesmo espaço, custam mais.',
+    vistas: [
+      { nome: 'Maior capacidade', series: [
+        { nome: 'Silício-carbono 6.000 mAh', pontos: ex(null, 15, 14) },
+        { nome: 'Silício-carbono 5.500 mAh', pontos: ex(14, 12.5, 12) },
+        { nome: 'Grafite 5.000 mAh', pontos: ex(9, 8, 8) },
+      ] },
+      { nome: 'Custo-benefício', series: [
+        { nome: 'Grafite 5.000 mAh (entrada)', pontos: ex(7, 6.2, 6) },
+        { nome: 'Grafite 4.500 mAh', pontos: ex(6, 5.4, 5.2) },
+        { nome: 'Grafite 4.000 mAh', pontos: ex(5.2, 4.7, 4.5) },
+      ] },
+    ],
+  },
+  camera: {
+    titulo: 'Quanto custa o sensor da câmera',
+    unidade: 'US$ por sensor da câmera principal · custo para o fabricante',
+    x: ANOS,
+    nota: 'Valores de exemplo; os nomes são sensores reais. Fabricantes de sensores não divulgam preços. Sensores maiores, como os de 1 polegada, custam bem mais porque usam mais área de silício.',
+    vistas: [
+      { nome: 'Mais avançados', series: [
+        { nome: 'Sony LYT-900 (1")', pontos: ex(30, 28, 27) },
+        { nome: 'Samsung ISOCELL HP2', pontos: ex(22, 20, 19) },
+        { nome: 'OmniVision OV50K', pontos: ex(null, 20, 18) },
+        { nome: 'Sony LYT-818', pontos: ex(null, 16, 15) },
+      ] },
+      { nome: 'Custo-benefício', series: [
+        { nome: 'Sony IMX882', pontos: ex(9, 8, 7.5) },
+        { nome: 'Samsung ISOCELL JN1', pontos: ex(6, 5.5, 5) },
+        { nome: 'OmniVision OV50D', pontos: ex(5.5, 5, 4.6) },
+      ] },
+    ],
+  },
+};
+
+/* =========================================================
+   Cena 3D
+   ========================================================= */
 const stage = document.getElementById('stage');
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 stage.appendChild(renderer.domElement);
 const el = renderer.domElement;
@@ -317,12 +553,11 @@ const el = renderer.domElement;
 const scene = new THREE.Scene();
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
-scene.add(new THREE.HemisphereLight(0xffffff, 0x1a3a30, 0.6));
-const sun = new THREE.DirectionalLight(0xffffff, 1.4);
-sun.position.set(6, 12, 10);
-scene.add(sun);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x1a3a30, 0.5));
+const key = new THREE.DirectionalLight(0xffffff, 1.5); key.position.set(6, 12, 10); scene.add(key);
+const rim = new THREE.DirectionalLight(0xbfe6ff, 0.9); rim.position.set(-8, 4, -10); scene.add(rim);
 
-const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 300);
+const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 300);
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* ---------- Ajudantes de geometria ---------- */
@@ -331,75 +566,106 @@ const mat = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness
 const mesh = (g, m) => new THREE.Mesh(g, m);
 
 function rr(w, h, r) {
-  const s = new THREE.Shape(), x = -w / 2, y = -h / 2;
-  s.moveTo(x + r, y);
-  s.lineTo(x + w - r, y); s.quadraticCurveTo(x + w, y, x + w, y + r);
-  s.lineTo(x + w, y + h - r); s.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  s.lineTo(x + r, y + h); s.quadraticCurveTo(x, y + h, x, y + h - r);
-  s.lineTo(x, y + r); s.quadraticCurveTo(x, y, x + r, y);
+  r = Math.min(r, w / 2, h / 2);
+  const s = new THREE.Shape(), x = w / 2 - r, y = h / 2 - r;
+  s.absarc(x, y, r, 0, Math.PI / 2);
+  s.absarc(-x, y, r, Math.PI / 2, Math.PI);
+  s.absarc(-x, -y, r, Math.PI, Math.PI * 1.5);
+  s.absarc(x, -y, r, Math.PI * 1.5, Math.PI * 2);
   return s;
 }
-// Placa de cantos arredondados, centrada em z, extrudada ao longo de z
-function slab(w, h, r, d, hole) {
-  const s = rr(w, h, r);
-  if (hole) s.holes.push(rr(hole.w, hole.h, hole.r));
-  const g = new THREE.ExtrudeGeometry(s, { depth: d, bevelEnabled: false, curveSegments: 20 });
-  g.translate(0, 0, -d / 2);
+// Placa de cantos arredondados (opcionalmente com furo e borda chanfrada), centrada em z
+function slab(w, h, r, d, o = {}) {
+  const b = o.bevel || 0;
+  const s = rr(w - 2 * b, h - 2 * b, Math.max(r - b, 0.01));
+  if (o.hole) s.holes.push(rr(o.hole.w + 2 * b, o.hole.h + 2 * b, o.hole.r + b));
+  const depth = Math.max(d - 2 * b, 0.001);
+  const g = new THREE.ExtrudeGeometry(s, {
+    depth, curveSegments: 28,
+    bevelEnabled: b > 0, bevelSize: b, bevelThickness: b, bevelSegments: b > 0 ? 6 : 0,
+  });
+  g.translate(0, 0, -depth / 2);
   return g;
 }
 function cyl(r, len, color, o) {
-  const m = mesh(new THREE.CylinderGeometry(r, r, len, 40), mat(color, o));
+  const m = mesh(new THREE.CylinderGeometry(r, r, len, 48), mat(color, o));
   m.rotation.x = Math.PI / 2;
   return m;
 }
-function circuitBoard(w, h, seed) {
+function canvasTex(w, h, draw) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  return t;
+}
+function roundPath(g, x, y, w, h, r) {
+  g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r);
+  g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath();
+}
+function circuitBoard(w, h, seed, shields) {
   const g = new THREE.Group();
-  g.add(mesh(slab(w, h, 0.25, 0.08), mat(0x1f5a3c, { roughness: 0.55 })));
+  const pcb = mesh(slab(w, h, 0.25, 0.08), mat(0x1c4f36, { roughness: 0.55 }));
+  g.add(pcb);
+  for (const [sx, sy, sw, sh] of shields) {
+    const can = mesh(slab(sw, sh, 0.06, 0.1), mat(0xc9ced3, { metalness: 1, roughness: 0.45 }));
+    can.position.set(sx, sy, 0.09); g.add(can);
+  }
   let s = seed;
   const rnd = () => (s = (s * 9301 + 49297) % 233280) / 233280;
-  for (let i = 0; i < 16; i++) {
-    const cw = 0.12 + rnd() * 0.32, ch = 0.08 + rnd() * 0.28;
-    const gold = rnd() < 0.3;
-    const b = mesh(new THREE.BoxGeometry(cw, ch, 0.05), mat(gold ? 0xd0a64a : 0x1d2024, { metalness: gold ? 1 : 0.3, roughness: 0.35 }));
-    b.position.set((rnd() - 0.5) * (w - 0.5), (rnd() - 0.5) * (h - 0.5), 0.065);
+  for (let i = 0; i < 18; i++) {
+    const cw = 0.08 + rnd() * 0.22, ch = 0.06 + rnd() * 0.18;
+    const gold = rnd() < 0.25;
+    const b = mesh(new THREE.BoxGeometry(cw, ch, 0.04), mat(gold ? 0xd0a64a : 0x1d2024, { metalness: gold ? 1 : 0.3, roughness: 0.35 }));
+    b.position.set((rnd() - 0.5) * (w - 0.4), (rnd() - 0.5) * (h - 0.4), 0.06);
     g.add(b);
   }
   return g;
 }
+
+/* ---------- Texturas ---------- */
 function screenTexture() {
-  const c = document.createElement('canvas');
-  c.width = 480; c.height = 1030;
-  const g = c.getContext('2d');
-  const round = (x, y, w, h, r) => {
-    g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r);
-    g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath();
-  };
-  round(0, 0, 480, 1030, 58); g.clip();
-  const bg = g.createLinearGradient(0, 0, 480, 1030);
-  bg.addColorStop(0, '#0e3b55'); bg.addColorStop(0.55, '#1b6a5c'); bg.addColorStop(1, '#e0a03c');
-  g.fillStyle = bg; g.fillRect(0, 0, 480, 1030);
-  g.fillStyle = 'rgba(255,255,255,0.92)';
-  g.font = '600 26px system-ui, sans-serif'; g.fillText('9:41', 44, 58);
-  g.font = '300 128px system-ui, sans-serif'; g.textAlign = 'center'; g.fillText('9:41', 240, 250);
-  g.font = '400 26px system-ui, sans-serif'; g.fillText('sexta-feira, 30 de outubro', 240, 296);
-  const hues = ['#f2b03d', '#7fd1b9', '#e86a5a', '#8fb8ff', '#ffffff', '#c6a1ff', '#5fd36d', '#ffd36b'];
-  for (let i = 0; i < 12; i++) {
-    const col = i % 4, row = Math.floor(i / 4);
-    g.fillStyle = hues[i % hues.length]; g.globalAlpha = 0.85;
-    round(52 + col * 102, 420 + row * 118, 72, 72, 18); g.fill();
-  }
-  g.globalAlpha = 0.25; g.fillStyle = '#ffffff';
-  round(26, 860, 428, 112, 40); g.fill();
-  g.globalAlpha = 0.9;
-  for (let i = 0; i < 4; i++) { g.fillStyle = hues[(i + 3) % hues.length]; round(52 + i * 102, 880, 72, 72, 18); g.fill(); }
-  g.globalAlpha = 1; g.fillStyle = '#000'; round(196, 22, 88, 26, 13); g.fill();
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  t.anisotropy = 8;
-  return t;
+  return canvasTex(480, 1030, (g) => {
+    roundPath(g, 0, 0, 480, 1030, 58); g.clip();
+    const bg = g.createLinearGradient(0, 0, 480, 1030);
+    bg.addColorStop(0, '#0e3b55'); bg.addColorStop(0.55, '#1b6a5c'); bg.addColorStop(1, '#e0a03c');
+    g.fillStyle = bg; g.fillRect(0, 0, 480, 1030);
+    g.fillStyle = 'rgba(255,255,255,0.92)';
+    g.font = '600 24px system-ui, sans-serif'; g.fillText('9:41', 40, 46);
+    g.textAlign = 'right'; g.fillText('5G  86%', 440, 46);
+    g.textAlign = 'center';
+    g.font = '300 128px system-ui, sans-serif'; g.fillText('9:41', 240, 250);
+    g.font = '400 26px system-ui, sans-serif'; g.fillText('sexta-feira, 30 de outubro', 240, 296);
+    const hues = ['#f2b03d', '#7fd1b9', '#e86a5a', '#8fb8ff', '#ffffff', '#c6a1ff', '#5fd36d', '#ffd36b'];
+    g.globalAlpha = 0.85;
+    for (let i = 0; i < 12; i++) {
+      g.fillStyle = hues[i % hues.length];
+      roundPath(g, 52 + (i % 4) * 102, 420 + Math.floor(i / 4) * 118, 72, 72, 18); g.fill();
+    }
+    g.globalAlpha = 0.22; g.fillStyle = '#ffffff'; roundPath(g, 26, 860, 428, 112, 40); g.fill();
+    g.globalAlpha = 0.9;
+    for (let i = 0; i < 4; i++) { g.fillStyle = hues[(i + 3) % hues.length]; roundPath(g, 52 + i * 102, 880, 72, 72, 18); g.fill(); }
+    g.globalAlpha = 1;
+    g.fillStyle = '#000'; g.beginPath(); g.arc(240, 34, 15, 0, Math.PI * 2); g.fill(); // furo da câmera frontal
+  });
+}
+function batteryTexture() {
+  return canvasTex(512, 600, (g, w, h) => {
+    g.fillStyle = '#20232a'; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#c3c9cf'; roundPath(g, 60, 150, 392, 250, 12); g.fill();
+    g.fillStyle = '#1b1e23'; g.textAlign = 'left';
+    g.font = '700 34px system-ui, sans-serif'; g.fillText('Li-ion Polymer', 88, 210);
+    g.font = '500 26px ui-monospace, monospace';
+    g.fillText('3,87 V  ·  5.000 mAh', 88, 262);
+    g.fillText('19,35 Wh', 88, 302);
+    g.font = '400 18px ui-monospace, monospace'; g.fillStyle = '#4a5058';
+    g.fillText('Não perfure · Não aqueça', 88, 360);
+  });
 }
 
-/* ---------- Peças ---------- */
+/* =========================================================
+   Peças
+   ========================================================= */
 const parts = [];
 const pickables = [];
 function addPart(id, obj, home, explode) {
@@ -416,122 +682,160 @@ function addPart(id, obj, home, explode) {
   return p;
 }
 
-const W = 7.2, H = 15, R = 0.95;
-const titanium = { metalness: 0.9, roughness: 0.32 };
+const W = 7.2, H = 15, R = 1.05;
+const titanium = { metalness: 0.92, roughness: 0.34 };
+const FRAME_COLOR = 0x9a9ea4;
 
-// Tampa traseira
-addPart('tampa', mesh(slab(W, H, R, 0.05), mat(0x34425c, { roughness: 0.38, metalness: 0.15 })), v(0, 0, -0.42), v(0, 0, -5.2));
+// Tampa traseira com ilha das câmeras
+{
+  const g = new THREE.Group();
+  g.add(mesh(slab(W, H, R, 0.06, { bevel: 0.025 }), mat(0x33405a, { roughness: 0.42, metalness: 0.12 })));
+  const island = mesh(slab(2.95, 2.95, 0.7, 0.07, { bevel: 0.03 }), mat(0x2c384f, { roughness: 0.2, metalness: 0.2 }));
+  island.position.set(-2.0, 5.8, -0.06); g.add(island);
+  addPart('tampa', g, v(0, 0, -0.42), v(0, 0, -5.4));
+}
 
 // Bobina de carga sem fio
 {
   const g = new THREE.Group();
-  g.add(mesh(new THREE.CircleGeometry(1.75, 48), mat(0x1c1c1f, { roughness: 0.8, side: THREE.DoubleSide })));
-  for (let i = 0; i < 6; i++) {
-    const t = mesh(new THREE.TorusGeometry(0.75 + i * 0.17, 0.045, 8, 72), mat(0xc07a3e, { metalness: 1, roughness: 0.3 }));
-    t.position.z = 0.02;
+  g.add(mesh(new THREE.CircleGeometry(1.75, 64), mat(0x1c1c1f, { roughness: 0.8, side: THREE.DoubleSide })));
+  for (let i = 0; i < 7; i++) {
+    const t = mesh(new THREE.TorusGeometry(0.62 + i * 0.16, 0.05, 8, 96), mat(0xc07a3e, { metalness: 1, roughness: 0.28 }));
+    t.scale.z = 0.5; t.position.z = 0.025;
     g.add(t);
   }
-  addPart('bobina', g, v(0, -1.4, -0.36), v(0, 0, -3.9));
+  addPart('bobina', g, v(0, -1.4, -0.36), v(0, 0, -4.0));
 }
 
 // Câmeras traseiras
 {
   const g = new THREE.Group();
   g.add(mesh(slab(2.4, 2.4, 0.55, 0.14), mat(0x2b2f36, { metalness: 0.6, roughness: 0.35 })));
-  for (const [x, y] of [[-0.5, 0.5], [-0.5, -0.5], [0.52, 0]]) {
-    const ring = cyl(0.42, 0.5, 0xb7bcc4, titanium); ring.position.set(x, y, -0.12); g.add(ring);
-    const lens = cyl(0.3, 0.52, 0x05070a, { roughness: 0.05, metalness: 0.4 }); lens.position.set(x, y, -0.12); g.add(lens);
+  for (const [x, y, r] of [[-0.52, 0.52, 0.44], [-0.52, -0.52, 0.4], [0.55, 0.0, 0.4]]) {
+    const ring = cyl(r, 0.5, 0xb7bcc4, titanium); ring.position.set(x, y, -0.12); g.add(ring);
+    const barrel = cyl(r - 0.07, 0.52, 0x0b0d10, { metalness: 0.5, roughness: 0.4 }); barrel.position.set(x, y, -0.12); g.add(barrel);
+    const glass = mesh(new THREE.CircleGeometry(r - 0.13, 48), mat(0x060a14, { metalness: 0.2, roughness: 0.02, emissive: 0x08122a }));
+    glass.position.set(x, y, -0.385); glass.rotation.y = Math.PI; g.add(glass);
   }
-  const flash = cyl(0.14, 0.3, 0xfff1c8, { roughness: 0.2, emissive: 0x3a2f10 }); flash.position.set(0.62, 0.78, -0.1); g.add(flash);
-  addPart('camera', g, v(-2.0, 5.8, -0.2), v(0, 0, -2.6));
+  const flash = cyl(0.14, 0.32, 0xfff1c8, { roughness: 0.2, emissive: 0x3a2f10 }); flash.position.set(0.62, 0.8, -0.1); g.add(flash);
+  const lidar = cyl(0.12, 0.3, 0x111111, { roughness: 0.15 }); lidar.position.set(0.62, -0.8, -0.1); g.add(lidar);
+  addPart('camera', g, v(-2.0, 5.8, -0.2), v(0, 0, -2.8));
 }
 
 // Bateria
 {
   const g = new THREE.Group();
-  g.add(mesh(slab(6.2, 7.2, 0.3, 0.46), mat(0x26282d, { roughness: 0.6, metalness: 0.2 })));
-  const label = mesh(new THREE.PlaneGeometry(4.2, 2.2), mat(0xb9c0c7, { metalness: 0.7, roughness: 0.4 }));
+  g.add(mesh(slab(6.2, 7.2, 0.35, 0.46, { bevel: 0.05 }), mat(0x24272d, { roughness: 0.55, metalness: 0.25 })));
+  const label = mesh(new THREE.PlaneGeometry(5.6, 6.56), new THREE.MeshStandardMaterial({ map: batteryTexture(), roughness: 0.5, metalness: 0.2 }));
   label.position.z = 0.232; g.add(label);
-  const tab = mesh(new THREE.BoxGeometry(0.9, 0.6, 0.02), mat(0x0d0d0d, { roughness: 0.9 }));
-  tab.position.set(-2.2, -3.75, 0.2); g.add(tab);
-  addPart('bateria', g, v(0, -1.6, -0.06), v(0, 0, -1.4));
+  const tab = mesh(new THREE.BoxGeometry(1.0, 0.7, 0.02), mat(0x0d0d0d, { roughness: 0.9 }));
+  tab.position.set(-2.2, -3.8, 0.24); g.add(tab);
+  addPart('bateria', g, v(0, -1.6, -0.06), v(0, 0, -1.5));
 }
 
-// Chassi (moldura)
+// Chassi (moldura) com bordas arredondadas, faixas de antena e furos
 {
   const g = new THREE.Group();
-  g.add(mesh(slab(W, H, R, 0.78, { w: W - 0.3, h: H - 0.3, r: R - 0.15 }), mat(0x8e939a, titanium)));
+  g.add(mesh(slab(W, H, R, 0.8, { bevel: 0.13, hole: { w: W - 0.34, h: H - 0.34, r: R - 0.17 } }), mat(FRAME_COLOR, titanium)));
   for (const x of [-1, 1]) for (const y of [-5.6, 5.4]) {
-    const band = mesh(new THREE.BoxGeometry(0.17, 0.1, 0.79), mat(0x2e3135, { roughness: 0.6 }));
-    band.position.set(x * 3.525, y, 0); g.add(band);
+    const band = mesh(new THREE.BoxGeometry(0.19, 0.09, 0.66), mat(0x2e3135, { roughness: 0.6 }));
+    band.position.set(x * 3.52, y, 0); g.add(band);
   }
+  for (const y of [-1, 1]) {
+    const band = mesh(new THREE.BoxGeometry(0.09, 0.19, 0.66), mat(0x2e3135, { roughness: 0.6 }));
+    band.position.set(y * 2.5, y * 7.42, 0); g.add(band);
+  }
+  const holeM = mat(0x050505, { roughness: 1 });
+  for (let i = 0; i < 6; i++) {
+    const hole = mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.06, 16), holeM);
+    hole.position.set(1.25 + i * 0.26, -7.48, 0); g.add(hole);
+  }
+  const mic = mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.06, 16), holeM); mic.position.set(-1.4, -7.48, 0); g.add(mic);
+  const port = mesh(slab(0.92, 0.34, 0.16, 0.06), holeM);
+  port.rotation.x = Math.PI / 2; port.position.set(0, -7.48, 0.02); g.add(port);
   addPart('chassi', g, v(0, 0, 0), v(0, 0, 0));
 }
 
-// Placa-mãe e chips
-addPart('placa', circuitBoard(3.8, 4.5, 7), v(1.3, 4.65, -0.05), v(0, 0, 1.0));
+// Placa-mãe, processador, RAM e armazenamento
+addPart('placa', circuitBoard(3.8, 4.5, 7, [[0.9, -1.4, 1.6, 1.2], [-0.9, 1.4, 1.4, 1.0]]), v(1.3, 4.65, -0.05), v(0, 0, 1.0));
 {
   const g = new THREE.Group();
-  g.add(mesh(new THREE.BoxGeometry(1.25, 1.25, 0.12), mat(0x17191c, { metalness: 0.4, roughness: 0.3 })));
-  const lid = mesh(new THREE.BoxGeometry(0.95, 0.95, 0.02), mat(0xaab2ba, { metalness: 1, roughness: 0.25 }));
-  lid.position.z = 0.07; g.add(lid);
-  addPart('soc', g, v(1.0, 5.3, 0.05), v(0, 0, 1.9));
+  g.add(mesh(slab(1.25, 1.25, 0.06, 0.1), mat(0x17191c, { metalness: 0.4, roughness: 0.3 })));
+  const die = mesh(new THREE.BoxGeometry(0.7, 0.7, 0.02), mat(0x5b6470, { metalness: 0.9, roughness: 0.2 }));
+  die.position.z = 0.055; g.add(die);
+  addPart('soc', g, v(1.0, 5.3, 0.04), v(0, 0, 1.9));
 }
-addPart('armazenamento', mesh(new THREE.BoxGeometry(1.15, 0.85, 0.1), mat(0x202226, { metalness: 0.3, roughness: 0.4 })), v(2.1, 3.4, 0.04), v(0, 0, 1.9));
-
-// Placa inferior e porta USB-C
-addPart('subplaca', circuitBoard(6.0, 1.4, 31), v(0, -6.2, -0.05), v(0, 0, 1.0));
 {
-  const port = mesh(slab(0.9, 0.32, 0.15, 0.55), mat(0xc4c9cf, { metalness: 1, roughness: 0.3 }));
-  port.rotation.x = -Math.PI / 2;
-  const g = new THREE.Group(); g.add(port);
-  const hole = mesh(slab(0.72, 0.16, 0.08, 0.02), mat(0x050505));
-  hole.rotation.x = -Math.PI / 2; hole.position.y = -0.27; g.add(hole);
-  addPart('usb', g, v(0, -7.05, 0.05), v(0, -1.8, 0.6));
+  const g = new THREE.Group();
+  g.add(mesh(slab(1.25, 1.25, 0.06, 0.06), mat(0x15171a, { metalness: 0.3, roughness: 0.45 })));
+  const dot = mesh(new THREE.CircleGeometry(0.05, 16), mat(0x9aa0a6)); dot.position.set(-0.48, 0.48, 0.031); g.add(dot);
+  addPart('ram', g, v(1.0, 5.3, 0.13), v(0, 0, 2.7));
+}
+addPart('armazenamento', mesh(slab(1.15, 0.85, 0.05, 0.1), mat(0x202226, { metalness: 0.3, roughness: 0.4 })), v(2.2, 3.4, 0.04), v(0, 0, 1.9));
+
+// Placa inferior, cabo flexível e porta USB-C
+addPart('subplaca', circuitBoard(6.0, 1.4, 31, [[-0.4, 0, 1.0, 0.8]]), v(0, -6.2, -0.05), v(0, 0, 1.0));
+{
+  const g = new THREE.Group();
+  const ribbon = mesh(slab(0.55, 7.9, 0.08, 0.02), mat(0xb7741a, { roughness: 0.35, metalness: 0.1, transparent: true, opacity: 0.92 }));
+  g.add(ribbon);
+  for (const y of [3.75, -3.75]) {
+    const con = mesh(new THREE.BoxGeometry(0.7, 0.45, 0.08), mat(0x1a1b1d, { roughness: 0.5 })); con.position.set(0, y, 0.03); g.add(con);
+  }
+  addPart('flex', g, v(2.85, -1.65, 0.22), v(0, 0, 3.4));
+}
+{
+  const g = new THREE.Group();
+  const shell = mesh(slab(0.9, 0.32, 0.15, 0.5), mat(0xc4c9cf, { metalness: 1, roughness: 0.3 }));
+  shell.rotation.x = -Math.PI / 2; g.add(shell);
+  const tongue = mesh(new THREE.BoxGeometry(0.55, 0.06, 0.4), mat(0x1a1a1a)); tongue.position.y = -0.05; g.add(tongue);
+  addPart('usb', g, v(0, -7.12, 0.02), v(0, -1.9, 0.6));
 }
 
 // Alto-falante principal e motor de vibração
 {
   const g = new THREE.Group();
-  g.add(mesh(slab(1.9, 1.0, 0.2, 0.26), mat(0x18191b, { roughness: 0.7 })));
+  g.add(mesh(slab(1.9, 1.0, 0.2, 0.26, { bevel: 0.03 }), mat(0x18191b, { roughness: 0.7 })));
   const grille = mesh(new THREE.PlaneGeometry(1.4, 0.6), mat(0x3a3d42, { roughness: 0.9, metalness: 0.4 }));
   grille.position.z = 0.132; g.add(grille);
   addPart('altofalante', g, v(2.2, -6.2, 0.15), v(0, 0, 2.4));
 }
-addPart('vibracao', mesh(slab(1.6, 0.7, 0.25, 0.26), mat(0xb3b8be, { metalness: 0.9, roughness: 0.35 })), v(-2.2, -6.2, 0.15), v(0, 0, 2.4));
+addPart('vibracao', mesh(slab(1.6, 0.7, 0.25, 0.26, { bevel: 0.03 }), mat(0xb3b8be, { metalness: 0.9, roughness: 0.35 })), v(-2.2, -6.2, 0.15), v(0, 0, 2.4));
 
 // Câmera frontal e auricular
 {
   const g = new THREE.Group();
   g.add(cyl(0.24, 0.24, 0x9ea4ab, titanium));
   const lens = cyl(0.15, 0.25, 0x04060a, { roughness: 0.05, metalness: 0.4 }); g.add(lens);
-  addPart('frontal', g, v(0, 6.75, 0.17), v(0, 0, 3.1));
+  addPart('frontal', g, v(0, 6.8, 0.17), v(0, 0, 3.4));
 }
-addPart('auricular', mesh(slab(1.5, 0.24, 0.1, 0.12), mat(0x3b3f45, { metalness: 0.5, roughness: 0.5 })), v(0, 7.12, 0.2), v(0, 0, 3.1));
+addPart('auricular', mesh(slab(1.5, 0.24, 0.1, 0.12), mat(0x3b3f45, { metalness: 0.5, roughness: 0.5 })), v(0, 7.18, 0.2), v(0, 0, 3.4));
 
 // Tela e vidro
 {
   const g = new THREE.Group();
-  g.add(mesh(slab(W - 0.22, H - 0.22, R - 0.1, 0.08), mat(0x050608, { roughness: 0.4 })));
+  g.add(mesh(slab(W - 0.24, H - 0.24, R - 0.1, 0.08), mat(0x050608, { roughness: 0.4 })));
   const screen = mesh(new THREE.PlaneGeometry(6.66, 14.3),
     new THREE.MeshBasicMaterial({ map: screenTexture(), transparent: true, toneMapped: false }));
   screen.position.z = 0.042; g.add(screen);
-  addPart('tela', g, v(0, 0, 0.34), v(0, 0, 4.3));
+  addPart('tela', g, v(0, 0, 0.34), v(0, 0, 4.6));
 }
-addPart('vidro', mesh(slab(W, H, R, 0.06),
-  new THREE.MeshPhysicalMaterial({ color: 0xffffff, transparent: true, opacity: 0.16, roughness: 0.04, metalness: 0, clearcoat: 1, depthWrite: false })),
-  v(0, 0, 0.42), v(0, 0, 5.6));
+addPart('vidro', mesh(slab(W - 0.02, H - 0.02, R - 0.01, 0.07, { bevel: 0.03 }),
+  new THREE.MeshPhysicalMaterial({ color: 0xffffff, transparent: true, opacity: 0.16, roughness: 0.03, metalness: 0, clearcoat: 1, depthWrite: false })),
+  v(0, 0, 0.42), v(0, 0, 5.9));
 
 // Bandeja SIM e botões
-addPart('sim', mesh(new THREE.BoxGeometry(0.08, 1.6, 0.26), mat(0xa3a9b0, titanium)), v(-3.62, 2.6, 0), v(-1.8, 0, 0));
+addPart('sim', mesh(slab(0.1, 1.6, 0.04, 0.26), mat(0xa3a9b0, titanium)), v(-3.62, 2.6, 0), v(-1.8, 0, 0));
 addPart('volume', (() => {
   const g = new THREE.Group();
-  for (const y of [0.55, -0.55]) { const b = mesh(slab(0.1, 0.95, 0.04, 0.26), mat(0x8e939a, titanium)); b.position.y = y; g.add(b); }
+  for (const y of [0.55, -0.55]) { const b = mesh(slab(0.12, 0.95, 0.05, 0.26, { bevel: 0.03 }), mat(FRAME_COLOR, titanium)); b.position.y = y; g.add(b); }
   return g;
-})(), v(3.63, 3.6, 0), v(1.8, 0, 0));
-addPart('energia', mesh(slab(0.1, 1.2, 0.04, 0.26), mat(0x8e939a, titanium)), v(3.63, 1.1, 0), v(1.8, 0, 0));
+})(), v(3.62, 3.6, 0), v(1.8, 0, 0));
+addPart('energia', mesh(slab(0.12, 1.2, 0.05, 0.26, { bevel: 0.03 }), mat(FRAME_COLOR, titanium)), v(3.62, 1.1, 0), v(1.8, 0, 0));
 
-/* ---------- Câmera e controles ---------- */
+/* =========================================================
+   Câmera e controles
+   ========================================================= */
 let pointerDown = null, drag = null, hovered = null, selected = null, exploded = false;
 
 // O tratamento de clique/arraste das peças precisa rodar antes do OrbitControls.
@@ -540,7 +844,6 @@ const controls = new OrbitControls(camera, el);
 controls.enableDamping = true;
 controls.minDistance = 8;
 controls.maxDistance = 70;
-controls.target.set(0, 0, 0);
 
 function resize() {
   const w = stage.clientWidth, h = stage.clientHeight;
@@ -549,7 +852,7 @@ function resize() {
   camera.updateProjectionMatrix();
 }
 function frame() {
-  const d = 28 * Math.max(1, 0.85 / camera.aspect);
+  const d = 30 * Math.max(1, 0.85 / camera.aspect);
   camera.position.copy(v(0.42, 0.2, 0.88).normalize().multiplyScalar(d));
   controls.update();
 }
@@ -629,7 +932,9 @@ el.addEventListener('pointerup', onUp);
 el.addEventListener('pointercancel', onUp);
 el.addEventListener('pointerleave', () => { if (!drag) { hovered = null; tip.hidden = true; paint(); } });
 
-/* ---------- Ficha informativa ---------- */
+/* =========================================================
+   Ficha informativa
+   ========================================================= */
 const info = document.getElementById('info'), list = document.getElementById('list');
 const $ = (id) => document.getElementById(id);
 function select(p) {
@@ -642,6 +947,7 @@ function select(p) {
   $('i-func').textContent = p.info.func;
   $('i-mat').textContent = p.info.mat;
   $('i-fact').textContent = p.info.fato;
+  showPrice(p.id);
   info.hidden = false;
   info.scrollTop = 0;
 }
@@ -653,13 +959,174 @@ for (const p of [...parts].reverse()) {
   const li = document.createElement('li');
   const b = document.createElement('button');
   b.type = 'button';
-  b.innerHTML = `${p.info.nome}<span>${p.info.cat}</span>`;
+  b.append(p.info.nome);
+  const tag = document.createElement('span');
+  tag.textContent = p.info.cat;
+  if (PRECOS[p.id]) { const g = document.createElement('b'); g.textContent = ' · preços'; tag.append(g); }
+  b.append(tag);
   b.addEventListener('click', () => { if (!exploded) explode(true); select(p); });
   li.appendChild(b); items.appendChild(li);
 }
 $('btn-list').addEventListener('click', () => { info.hidden = true; list.hidden = !list.hidden; });
 
-/* ---------- Desmontar / montar ---------- */
+/* =========================================================
+   Gráfico de preço (SVG desenhado à mão)
+   ========================================================= */
+const SVGNS = 'http://www.w3.org/2000/svg';
+const COLORS = ['var(--s1)', 'var(--s2)', 'var(--s3)', 'var(--s4)', 'var(--s5)'];
+let priceView = 0;
+
+function svgEl(tag, attrs, parent) {
+  const n = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) {
+    const val = attrs[k];
+    // variáveis CSS só funcionam em fill/stroke via style, não como atributo
+    if ((k === 'fill' || k === 'stroke') && String(val).startsWith('var(')) n.style[k] = val;
+    else n.setAttribute(k, val);
+  }
+  if (parent) parent.appendChild(n);
+  return n;
+}
+function niceStep(range) {
+  const raw = range / 4, p = Math.pow(10, Math.floor(Math.log10(raw)));
+  const n = raw / p;
+  return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p;
+}
+function fmt(n) { return n.toLocaleString('pt-BR', { maximumFractionDigits: 1 }); }
+
+function showPrice(id) {
+  const cfg = PRECOS[id];
+  const box = $('price');
+  if (!cfg) { box.hidden = true; return; }
+  box.hidden = false;
+  $('p-title').textContent = cfg.titulo;
+  $('p-unit').textContent = cfg.unidade;
+  $('p-note').textContent = cfg.nota;
+  if (priceView >= cfg.vistas.length) priceView = 0;
+  const tabs = $('p-tabs');
+  tabs.replaceChildren();
+  tabs.hidden = cfg.vistas.length < 2;
+  cfg.vistas.forEach((vw, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.setAttribute('role', 'tab'); b.textContent = vw.nome;
+    b.setAttribute('aria-selected', String(i === priceView));
+    b.addEventListener('click', () => { priceView = i; showPrice(id); });
+    tabs.appendChild(b);
+  });
+  drawChart(cfg, cfg.vistas[priceView]);
+}
+
+function drawChart(cfg, view) {
+  const box = $('p-chart'); box.replaceChildren();
+  const Wd = 360, Ht = 220, m = { l: 40, r: 12, t: 12, b: 26 };
+  const n = cfg.x.length;
+  const vals = [];
+  view.series.forEach((s) => s.pontos.forEach((p) => { if (p) vals.push(p.max ?? p.y, p.min ?? p.y); }));
+  const hi = Math.max(...vals), step = niceStep(hi);
+  const ymax = Math.ceil((hi * 1.05) / step) * step;
+  const X = (i) => m.l + (i * (Wd - m.l - m.r)) / (n - 1);
+  const Y = (y) => m.t + (1 - y / ymax) * (Ht - m.t - m.b);
+
+  const svg = svgEl('svg', { viewBox: `0 0 ${Wd} ${Ht}`, role: 'img', 'aria-label': `${cfg.titulo}: ${view.nome}` }, box);
+  for (let t = 0; t <= ymax + 1e-9; t += step) {
+    svgEl('line', { x1: m.l, x2: Wd - m.r, y1: Y(t), y2: Y(t), class: 'grid' }, svg);
+    const lab = svgEl('text', { x: m.l - 6, y: Y(t) + 3.5, 'text-anchor': 'end' }, svg);
+    lab.textContent = fmt(t);
+  }
+  const every = n > 6 ? 2 : 1;
+  cfg.x.forEach((lbl, i) => {
+    if (i % every && i !== n - 1) return;
+    const t = svgEl('text', { x: X(i), y: Ht - 8, 'text-anchor': 'middle' }, svg);
+    t.textContent = lbl;
+  });
+
+  const pts = [];
+  view.series.forEach((s, si) => {
+    const color = COLORS[si % COLORS.length];
+    // linhas: sólida entre dois dados publicados, tracejada se algum ponto for exemplo
+    let prev = null;
+    s.pontos.forEach((p, i) => {
+      if (!p) { prev = null; return; }
+      if (prev) {
+        svgEl('line', { x1: X(prev.i), y1: Y(prev.p.y), x2: X(i), y2: Y(p.y), stroke: color, 'stroke-width': 2,
+          'stroke-dasharray': prev.p.ex || p.ex ? '5 4' : 'none', 'stroke-linecap': 'round', opacity: prev.p.ex || p.ex ? 0.75 : 1 }, svg);
+      }
+      prev = { p, i };
+    });
+    s.pontos.forEach((p, i) => {
+      if (!p) return;
+      if (p.min != null && p.max != null) {
+        svgEl('line', { x1: X(i), x2: X(i), y1: Y(p.min), y2: Y(p.max), stroke: color, 'stroke-width': 6, opacity: 0.28, 'stroke-linecap': 'round' }, svg);
+      }
+      pts.push({ s, si, p, i, color });
+    });
+  });
+  // pontos por cima das linhas, com área de toque maior
+  pts.forEach((d) => {
+    const g = svgEl('g', { class: 'pt', tabindex: 0, role: 'button', 'aria-label': describe(cfg, d) }, svg);
+    svgEl('circle', { cx: X(d.i), cy: Y(d.p.y), r: 11, class: 'hit' }, g);
+    svgEl('circle', { cx: X(d.i), cy: Y(d.p.y), r: d.p.ex ? 3.6 : 4.2,
+      fill: d.p.ex ? 'var(--mat)' : d.color, stroke: d.color, 'stroke-width': d.p.ex ? 1.6 : 0 }, g);
+    const act = () => readout(cfg, d);
+    g.addEventListener('click', act);
+    g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); act(); } });
+  });
+
+  // legenda
+  const leg = $('p-legend'); leg.replaceChildren();
+  view.series.forEach((s, si) => {
+    const color = COLORS[si % COLORS.length];
+    const real = s.pontos.filter((p) => p && !p.ex).length, total = s.pontos.filter(Boolean).length;
+    const li = document.createElement('li');
+    const sw = svgEl('svg', { width: 22, height: 10, 'aria-hidden': 'true' });
+    svgEl('line', { x1: 1, x2: 21, y1: 5, y2: 5, stroke: color, 'stroke-width': 2.5, 'stroke-dasharray': real === total ? 'none' : '5 3' }, sw);
+    li.append(sw, s.nome);
+    if (real < total) { const e2 = document.createElement('em'); e2.textContent = real ? '(parte exemplo)' : '(exemplo)'; li.append(e2); }
+    leg.appendChild(li);
+  });
+
+  // chave de leitura
+  const anyEx = pts.some((d) => d.p.ex), anyReal = pts.some((d) => !d.p.ex), anyRange = pts.some((d) => d.p.min != null);
+  const keyBox = $('p-key'); keyBox.replaceChildren();
+  const keyItem = (svgFn, label) => {
+    const sp = document.createElement('span');
+    const sw = svgEl('svg', { width: 12, height: 12, 'aria-hidden': 'true' }); svgFn(sw);
+    sp.append(sw, label); keyBox.appendChild(sp);
+  };
+  if (anyReal) keyItem((s) => svgEl('circle', { cx: 6, cy: 6, r: 4, fill: 'var(--ink)' }, s), 'dado publicado');
+  if (anyEx) keyItem((s) => svgEl('circle', { cx: 6, cy: 6, r: 3.5, fill: 'none', stroke: 'var(--ink)', 'stroke-width': 1.5 }, s), 'valor de exemplo, não é preço real');
+  if (anyRange) keyItem((s) => svgEl('line', { x1: 6, x2: 6, y1: 1, y2: 11, stroke: 'var(--ink)', 'stroke-width': 5, opacity: 0.35 }, s), 'faixa estimada');
+
+  const rd = $('p-read');
+  rd.textContent = 'Toque num ponto do gráfico para ver o valor e a fonte.';
+}
+
+function describe(cfg, d) {
+  const val = d.p.ex ? `${fmt(d.p.y)} (exemplo)` : (d.p.txt || fmt(d.p.y));
+  return `${d.s.nome}${d.p.m && !d.p.ex ? ', ' + d.p.m : ''}, ${cfg.x[d.i]}: ${val}`;
+}
+function readout(cfg, d) {
+  const rd = $('p-read'); rd.replaceChildren();
+  const title = document.createElement('strong');
+  title.textContent = (d.p.m && !d.p.ex) ? d.p.m : d.s.nome;
+  rd.append(title, ` · ${cfg.x[d.i]}`, document.createElement('br'));
+  if (d.p.ex) {
+    const tag = document.createElement('span'); tag.className = 'ex'; tag.textContent = 'Exemplo';
+    rd.append(tag, ` ${fmt(d.p.y)}${d.p.m ? ' · ' + d.p.m : ''}. Valor ilustrativo, sem fonte.`);
+    return;
+  }
+  rd.append(d.p.txt || fmt(d.p.y));
+  const f = FONTES[d.p.f];
+  if (f) {
+    rd.append(document.createElement('br'), 'Fonte: ');
+    const a = document.createElement('a'); a.href = f.u; a.target = '_blank'; a.rel = 'noopener'; a.textContent = f.t;
+    rd.append(a);
+  }
+}
+
+/* =========================================================
+   Desmontar / montar e loop
+   ========================================================= */
 function explode(on) {
   exploded = on;
   for (const p of parts) p.goal = on ? p.home.clone().add(p.explode) : p.home.clone();
@@ -668,7 +1135,6 @@ function explode(on) {
 $('btn-explode').addEventListener('click', () => explode(true));
 $('btn-reset').addEventListener('click', () => explode(false));
 
-/* ---------- Loop ---------- */
 renderer.setAnimationLoop(() => {
   for (const p of parts) {
     if (!p.goal) continue;
