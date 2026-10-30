@@ -12,12 +12,14 @@ Um celular em 3D que você desmonta no navegador, no estilo *teardown*.
 
 ## Sobre os preços
 
-Fabricantes não publicam o preço das peças de celular. Por isso os gráficos misturam dois tipos de valor, sempre marcados:
+Fabricantes não publicam o preço das peças de celular. Os gráficos mostram **só números publicados** por analistas e imprensa, e a fonte aparece ao tocar em cada ponto.
 
-- **Dado publicado** (linha cheia, ponto cheio): estimativas de analistas e da imprensa, com a fonte aparecendo ao tocar no ponto. Hoje cobrem os processadores topo de linha (Qualcomm, MediaTek, Apple, Exynos) e a variação trimestral do preço da RAM (TrendForce).
-- **Valor de exemplo** (linha tracejada, ponto vazado): números ilustrativos para mostrar a tendência onde não há dado público. Não são preços reais.
+- **SoC:** estimativas de custo por chip dos topo de linha (Qualcomm, MediaTek, Apple, Exynos).
+- **RAM:** variação trimestral do preço de contrato (TrendForce), LPDDR5X e LPDDR4X.
+- **Armazenamento:** variação do preço da memória NAND nos dois trimestres em que achamos número.
+- **Display, bateria e câmera:** nenhum preço publicado encontrado; a ficha mostra "Preço não encontrado".
 
-Os dados ficam no objeto `PRECOS` dentro do `index.html`, e as fontes no objeto `FONTES`.
+Onde falta número, a linha é interrompida e a ficha lista o que não foi encontrado. Os dados ficam no objeto `PRECOS` dentro do `index.html`, e as fontes no objeto `FONTES`.
 
 ## Como rodar
 

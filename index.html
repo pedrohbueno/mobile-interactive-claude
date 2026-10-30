@@ -161,6 +161,10 @@
   .readout strong { font-weight: 600; }
   .readout a { color: var(--tape); }
   .readout .ex { color: var(--tape); font: 500 11px/1 var(--mono); text-transform: uppercase; letter-spacing: 0.08em; }
+  .nf { margin-top: 8px; font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+  .nf strong { color: var(--ink); font-weight: 600; }
+  .nf-big { margin: 0; padding: 18px 14px; border: 1px dashed var(--edge); border-radius: 10px; font-size: 13.5px; }
+  .nf-big strong { font: 600 15px/1.4 var(--display); color: var(--tape); }
   .note { font-size: 12.5px; line-height: 1.5; color: var(--muted); }
   .key { display: flex; flex-wrap: wrap; gap: 4px 14px; font: 400 11.5px/1.4 var(--mono); color: var(--muted); }
   .key span { display: inline-flex; align-items: center; gap: 6px; }
@@ -258,7 +262,6 @@
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 /* =========================================================
    Ficha de cada peça
@@ -399,42 +402,36 @@ const FONTES = {
   m9: { t: 'TrendForce via I-Connect007, 02/02/2026', u: 'https://iconnect007.com/article/148637/1q26-memory-price-outlook-sharply-upgraded-as-qoq-increases-hit-record-highs/148634/pcb' },
   m10: { t: 'TrendForce, 14/05/2026', u: 'https://www.trendforce.com/presscenter/news/20260514-13044.html' },
   mr: { t: 'MacRumors, 10/07/2026 (Counterpoint e WSJ)', u: 'https://macrumors.com/2026/07/10/iphone-18-pro-max-costs-could-rise' },
+  tt: { t: 'TrendForce via TweakTown, 2026', u: 'https://www.tweaktown.com/news/110829/dram-prices-to-increase-by-up-63-in-q2-nand-flash-75-new-report-says/index.html' },
 };
 
-const ANOS = ['2024', '2025', '2026'];
-const ex = (...ys) => ys.map((y) => (y == null ? null : { y, ex: 1 }));
-
-// Índice de preço a partir das variações trimestrais (4T23 = 100)
-function indice(qoq) {
-  let v = 100;
-  return qoq.map(([pct, faixa, fonte, estimado]) => {
-    v *= 1 + pct / 100;
-    const y = Math.round(v * 10) / 10;
-    return estimado ? { y, ex: 1, m: faixa } : { y, txt: `índice ${y.toLocaleString('pt-BR')} · variação no trimestre: ${faixa}`, f: fonte };
-  });
-}
+// Ponto publicado: { y, min?, max?, txt, m (modelo), f (fonte) }.  null = número não encontrado.
 const TRI = ['1T24', '2T24', '3T24', '4T24', '1T25', '2T25', '3T25', '4T25', '1T26', '2T26'];
+const q = (lo, hi, f, extra = '') => ({ y: (lo + hi) / 2, min: lo, max: hi, f,
+  txt: (lo === hi ? `${lo > 0 ? '+' : ''}${lo}%` : `${lo > 0 ? '+' : ''}${lo}% a ${hi > 0 ? '+' : ''}${hi}%`) + extra });
 
 const PRECOS = {
   soc: {
-    titulo: 'Quanto custa o processador',
+    titulo: 'Quanto custa o SoC',
     unidade: 'US$ por chip · estimativa do custo para o fabricante do celular · eixo: ano em que o chip chega aos celulares',
     x: ['2024', '2025', '2026', '2027*'],
-    nota: '* 2027: estimativas feitas antes do lançamento. Ninguém publica preço oficial de processador; os valores reais vêm de vazamentos e analistas e variam com o volume de cada contrato. Tendência clara: com os chips de 3 e 2 nm, o topo de linha ficou bem mais caro a cada geração.',
+    nota: '* 2027: estimativas feitas antes do lançamento. Ninguém publica preço oficial de processador; os valores vêm de vazamentos e analistas e variam com o volume de cada contrato.',
     vistas: [
-      { nome: 'Mais potentes', series: [
+      { nome: 'Mais potentes',
+        naoEncontrado: 'Google Tensor (todas as gerações); Apple A18 (2024); Exynos 2400 e 2500 (2024 e 2025).',
+        series: [
         { nome: 'Qualcomm Snapdragon 8', pontos: [
           { y: 185, min: 170, max: 200, txt: 'US$ 170–200', m: 'Snapdragon 8 Gen 3', f: 'wcSD' },
           { y: 220, txt: 'US$ 220 ou mais', m: 'Snapdragon 8 Elite', f: 'wcSD' },
           { y: 260, min: 240, max: 280, txt: 'US$ 240–280', m: 'Snapdragon 8 Elite Gen 5', f: 'wcSD' },
           { y: 250, min: 240, max: 260, txt: 'US$ 240–260 (antes do lançamento)', m: 'Snapdragon 8 Elite Gen 6 Pro', f: 'nbc' } ] },
         { nome: 'Apple A (iPhone)', pontos: [
-          ...ex(120),
+          null,
           { y: 155, txt: 'cerca de US$ 155', m: 'Apple A19', f: 'apf' },
-          { y: 270, min: 260, max: 280, txt: 'US$ 260–280 (estimativas de duas fontes)', m: 'Apple A20 / A20 Pro', f: 'apf' },
+          { y: 270, min: 260, max: 280, txt: 'US$ 260–280 (duas estimativas diferentes)', m: 'Apple A20 / A20 Pro', f: 'apf' },
           null ] },
-        { nome: 'Samsung Exynos 2x00', pontos: [
-          ...ex(150, 175),
+        { nome: 'Samsung Exynos', pontos: [
+          null, null,
           { y: 235, min: 210, max: 260, txt: 'US$ 20–30 abaixo do Snapdragon da mesma geração (≈ US$ 210–260)', m: 'Exynos 2600', f: 'tfEx' },
           null ] },
         { nome: 'MediaTek Dimensity 9000', pontos: [
@@ -442,115 +439,52 @@ const PRECOS = {
           { y: 155, txt: 'cerca de US$ 155', m: 'Dimensity 9400', f: 'wcMT' },
           { y: 190, min: 180, max: 200, txt: 'US$ 180–200', m: 'Dimensity 9500', f: 'wcMT' },
           { y: 220, txt: 'até US$ 220 (antes do lançamento)', m: 'Dimensity 9600 Pro', f: 'nbc' } ] },
-        { nome: 'Google Tensor', pontos: [...ex(90, 105, 125), null] },
       ] },
-      { nome: 'Custo-benefício', series: [
-        { nome: 'Snapdragon 8s', pontos: [...ex(110, 120, 145), null] },
-        { nome: 'Dimensity 8000', pontos: [...ex(75, 82, 100), null] },
-        { nome: 'Snapdragon 7', pontos: [...ex(55, 60, 72), null] },
-        { nome: 'Exynos 1x80', pontos: [...ex(42, 45, 54), null] },
-        { nome: 'Dimensity 7000', pontos: [...ex(35, 38, 46), null] },
-      ] },
+      { nome: 'Custo-benefício', series: [],
+        naoEncontrado: 'Não encontramos estimativas publicadas de preço para os chips intermediários (Snapdragon 8s e 7, Dimensity 8000 e 7000, Exynos 1x80) desde 2024.' },
     ],
   },
   ram: {
-    titulo: 'Quanto custa a RAM',
-    unidade: 'Índice de preço de contrato da RAM de celular (4º tri de 2023 = 100)',
+    titulo: 'Quanto variou o preço da RAM',
+    unidade: 'Variação do preço de contrato em relação ao trimestre anterior (%) · faixa prevista pela TrendForce',
     x: TRI,
-    nota: 'Calculado com o ponto médio de cada previsão trimestral da TrendForce. Onde a TrendForce só disse a direção (sem número), usamos um valor de exemplo, e os trimestres seguintes partem dele. Em 2024 a TrendForce deu um número único para toda a RAM de celular. Para ter ideia em dólares: o WSJ estimou que a RAM de um iPhone passaria de US$ 39 para US$ 145 com a alta de 2026 (via MacRumors).',
-    fontesExtra: ['mr'],
+    nota: 'Em 2024 a TrendForce deu um número único para toda a RAM de celular, por isso as duas linhas coincidem. Em dólares: o WSJ estimou que a RAM de um iPhone passaria de US$ 39 para US$ 145 com a alta de 2026 (via MacRumors).',
     vistas: [
-      { nome: 'Topo e entrada', series: [
-        { nome: 'LPDDR5X (topo de linha)', pontos: indice([
-          [20.5, '+18 a +23% (RAM de celular em geral)', 'm1'], [5.5, '+3 a +8% (RAM de celular em geral)', 'm2'],
-          [5.5, '+3 a +8% (RAM de celular em geral)', 'm3'], [0, 'estável', 'm4'], [-5.5, '−3 a −8%', 'm5'],
-          [2.5, '0 a +5%', 'm6'], [7.5, '+5 a +10%', 'm7'], [10, 'alta, sem número divulgado; usamos +10%', null, 1],
-          [90, 'cerca de +90%', 'm9'], [80.5, '+78 a +83%', 'm10'] ]) },
-        { nome: 'LPDDR4X (aparelhos de entrada)', pontos: indice([
-          [20.5, '+18 a +23% (RAM de celular em geral)', 'm1'], [5.5, '+3 a +8% (RAM de celular em geral)', 'm2'],
-          [0, 'menor alta ou queda, sem número; usamos 0%', null, 1], [-7.5, '−5 a −10%', 'm4'], [-10.5, '−8 a −13%', 'm5'],
-          [-2.5, '0 a −5%', 'm6'], [25.5, '+23 a +28%', 'm7'], [10, 'mais de +10% (usamos +10%)', 'm8'],
-          [90, 'cerca de +90%', 'm9'], [72.5, '+70 a +75%', 'm10'] ]) },
+      { nome: 'LPDDR5X e LPDDR4X',
+        naoEncontrado: 'LPDDR5X no 4T25 (a TrendForce só disse que o preço continuaria subindo); LPDDR4X no 3T24 (só disse que subiria pouco ou cairia).',
+        series: [
+        { nome: 'LPDDR5X (topo de linha)', pontos: [
+          q(18, 23, 'm1', ' (RAM de celular em geral)'), q(3, 8, 'm2', ' (RAM de celular em geral)'), q(3, 8, 'm3', ' (RAM de celular em geral)'),
+          { y: 0, txt: 'estável', f: 'm4' }, q(-8, -3, 'm5'), q(0, 5, 'm6'), q(5, 10, 'm7'), null,
+          { y: 90, txt: 'cerca de +90%', f: 'm9' }, q(78, 83, 'm10') ] },
+        { nome: 'LPDDR4X (aparelhos de entrada)', pontos: [
+          q(18, 23, 'm1', ' (RAM de celular em geral)'), q(3, 8, 'm2', ' (RAM de celular em geral)'), null,
+          q(-10, -5, 'm4'), q(-13, -8, 'm5'), q(-5, 0, 'm6'), q(23, 28, 'm7'),
+          { y: 10, txt: 'mais de +10%', f: 'm8' }, { y: 90, txt: 'cerca de +90%', f: 'm9' }, q(70, 75, 'm10') ] },
       ] },
     ],
   },
   armazenamento: {
-    titulo: 'Quanto custa o armazenamento',
-    unidade: 'US$ por chip de memória flash · custo para o fabricante',
-    x: ANOS,
-    nota: 'Só um ponto é publicado: a Counterpoint estimou que a memória de 1 TB do iPhone 18 Pro Max passa de US$ 250. O resto é exemplo, mas segue a direção real: a TrendForce previu alta de 55–60% no preço da memória flash no 1º tri de 2026 e de até 75% no 2º.',
+    titulo: 'Quanto variou o preço da memória flash',
+    unidade: 'Variação do preço de contrato da memória NAND (todas as aplicações) em relação ao trimestre anterior (%)',
+    x: TRI,
+    nota: 'Valores em dólares encontrados: a Counterpoint estimou que a memória de 1 TB do iPhone 18 Pro Max passa de US$ 250; o WSJ, que o armazenamento de um iPhone passaria de US$ 13 para US$ 51 (os dois via MacRumors).',
     vistas: [
-      { nome: 'Mais rápidos', series: [
-        { nome: 'UFS 4 · 1 TB', pontos: [...ex(70, 75), { y: 250, txt: 'mais de US$ 250', m: 'Flash de 1 TB do iPhone 18 Pro Max', f: 'mr' }] },
-        { nome: 'UFS 4 · 512 GB', pontos: ex(36, 38, 110) },
-        { nome: 'UFS 4 · 256 GB', pontos: ex(19, 20, 58) },
-      ] },
-      { nome: 'Custo-benefício', series: [
-        { nome: 'UFS 3.1 · 256 GB', pontos: ex(15, 16, 45) },
-        { nome: 'UFS 3.1 · 128 GB', pontos: ex(8, 8.5, 24) },
-        { nome: 'UFS 2.2 · 128 GB', pontos: ex(7, 7.5, 20) },
+      { nome: 'NAND',
+        naoEncontrado: 'Variação trimestral com número para a memória UFS de celular em todos os trimestres, e para NAND em geral de 1T24 a 4T25.',
+        series: [
+        { nome: 'NAND (contrato, geral)', pontos: [
+          null, null, null, null, null, null, null, null,
+          q(55, 60, 'm9'), { y: 75, txt: 'até +75%', f: 'tt' } ] },
       ] },
     ],
   },
-  tela: {
-    titulo: 'Quanto custa a tela',
-    unidade: 'US$ por painel de ~6,7" · custo para o fabricante',
-    x: ANOS,
-    nota: 'Valores de exemplo. Os fabricantes de tela não divulgam preços, mas a tendência geral é de queda leve, porque fábricas chinesas aumentaram muito a produção de OLED.',
-    vistas: [
-      { nome: 'Mais avançadas', series: [
-        { nome: 'Samsung Display LTPO', pontos: ex(85, 80, 78) },
-        { nome: 'LG Display LTPO', pontos: ex(82, 78, 75) },
-        { nome: 'BOE LTPO', pontos: ex(70, 64, 60) },
-        { nome: 'TCL CSOT LTPO', pontos: ex(62, 57, 53) },
-        { nome: 'Visionox LTPO', pontos: ex(60, 55, 51) },
-      ] },
-      { nome: 'Custo-benefício', series: [
-        { nome: 'Samsung Display OLED rígido', pontos: ex(28, 25, 24) },
-        { nome: 'BOE OLED flexível LTPS', pontos: ex(32, 28, 26) },
-        { nome: 'Tianma OLED rígido', pontos: ex(22, 20, 19) },
-        { nome: 'TCL CSOT OLED rígido', pontos: ex(21, 19, 18) },
-        { nome: 'LCD IPS (vários)', pontos: ex(11, 10, 10) },
-      ] },
-    ],
-  },
-  bateria: {
-    titulo: 'Quanto custa a bateria',
-    unidade: 'US$ por célula de bateria de celular · custo para o fabricante',
-    x: ANOS,
-    nota: 'Valores de exemplo. A tendência geral: o lítio ficou mais barato em 2024–2025, e as baterias de silício-carbono, que guardam mais energia no mesmo espaço, custam mais.',
-    vistas: [
-      { nome: 'Maior capacidade', series: [
-        { nome: 'Silício-carbono 6.000 mAh', pontos: ex(null, 15, 14) },
-        { nome: 'Silício-carbono 5.500 mAh', pontos: ex(14, 12.5, 12) },
-        { nome: 'Grafite 5.000 mAh', pontos: ex(9, 8, 8) },
-      ] },
-      { nome: 'Custo-benefício', series: [
-        { nome: 'Grafite 5.000 mAh (entrada)', pontos: ex(7, 6.2, 6) },
-        { nome: 'Grafite 4.500 mAh', pontos: ex(6, 5.4, 5.2) },
-        { nome: 'Grafite 4.000 mAh', pontos: ex(5.2, 4.7, 4.5) },
-      ] },
-    ],
-  },
-  camera: {
-    titulo: 'Quanto custa o sensor da câmera',
-    unidade: 'US$ por sensor da câmera principal · custo para o fabricante',
-    x: ANOS,
-    nota: 'Valores de exemplo; os nomes são sensores reais. Fabricantes de sensores não divulgam preços. Sensores maiores, como os de 1 polegada, custam bem mais porque usam mais área de silício.',
-    vistas: [
-      { nome: 'Mais avançados', series: [
-        { nome: 'Sony LYT-900 (1")', pontos: ex(30, 28, 27) },
-        { nome: 'Samsung ISOCELL HP2', pontos: ex(22, 20, 19) },
-        { nome: 'OmniVision OV50K', pontos: ex(null, 20, 18) },
-        { nome: 'Sony LYT-818', pontos: ex(null, 16, 15) },
-      ] },
-      { nome: 'Custo-benefício', series: [
-        { nome: 'Sony IMX882', pontos: ex(9, 8, 7.5) },
-        { nome: 'Samsung ISOCELL JN1', pontos: ex(6, 5.5, 5) },
-        { nome: 'OmniVision OV50D', pontos: ex(5.5, 5, 4.6) },
-      ] },
-    ],
-  },
+  tela: { titulo: 'Quanto custa o display', vistas: [],
+    naoEncontrado: 'Não encontramos preços publicados de painéis OLED de celular (Samsung Display, LG Display, BOE, TCL CSOT, Visionox) desde 2024.' },
+  bateria: { titulo: 'Quanto custa a bateria', vistas: [],
+    naoEncontrado: 'Não encontramos preços publicados de células de bateria de celular desde 2024.' },
+  camera: { titulo: 'Quanto custa o sensor da câmera', vistas: [],
+    naoEncontrado: 'Não encontramos preços publicados de sensores de câmera de celular (Sony, Samsung ISOCELL, OmniVision) desde 2024.' },
 };
 
 /* =========================================================
@@ -567,7 +501,28 @@ const el = renderer.domElement;
 
 const scene = new THREE.Scene();
 const pmrem = new THREE.PMREMGenerator(renderer);
-scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+// Estúdio de fotografia: fundo em degradê e softboxes brilhantes, para os metais e vidros terem o que refletir
+function studioEnvironment() {
+  const env = new THREE.Scene();
+  const c = document.createElement('canvas'); c.width = 16; c.height = 256;
+  const g = c.getContext('2d'), grd = g.createLinearGradient(0, 0, 0, 256);
+  grd.addColorStop(0, '#2f353b'); grd.addColorStop(0.44, '#8d969b'); grd.addColorStop(0.5, '#d4dadc');
+  grd.addColorStop(0.56, '#5d6468'); grd.addColorStop(1, '#14181b');
+  g.fillStyle = grd; g.fillRect(0, 0, 16, 256);
+  const sky = new THREE.CanvasTexture(c); sky.colorSpace = THREE.SRGBColorSpace;
+  env.add(new THREE.Mesh(new THREE.SphereGeometry(50, 32, 16), new THREE.MeshBasicMaterial({ map: sky, side: THREE.BackSide })));
+  const box = (w, h, x, y, z, k) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(k, k, k), side: THREE.DoubleSide }));
+    m.position.set(x, y, z); m.lookAt(0, 0, 0); env.add(m);
+  };
+  box(30, 7, 0, 26, 8, 3.2);     // teto
+  box(5, 32, -28, 0, 8, 2.4);    // lateral esquerda (faixa vertical nas bordas)
+  box(4, 32, 28, 3, -4, 1.8);    // lateral direita
+  box(22, 3, 0, -5, 30, 1.3);    // frente baixa
+  box(14, 14, 10, 8, -30, 1.6);  // traseira
+  return pmrem.fromScene(env, 0.03).texture;
+}
+scene.environment = studioEnvironment();
 scene.add(new THREE.HemisphereLight(0xffffff, 0x1a3a30, 0.5));
 const key = new THREE.DirectionalLight(0xffffff, 1.5); key.position.set(6, 12, 10); scene.add(key);
 const rim = new THREE.DirectionalLight(0xbfe6ff, 0.9); rim.position.set(-8, 4, -10); scene.add(rim);
@@ -665,16 +620,140 @@ function screenTexture() {
   });
 }
 function batteryTexture() {
-  return canvasTex(512, 600, (g, w, h) => {
-    g.fillStyle = '#20232a'; g.fillRect(0, 0, w, h);
-    g.fillStyle = '#c3c9cf'; roundPath(g, 60, 150, 392, 250, 12); g.fill();
-    g.fillStyle = '#1b1e23'; g.textAlign = 'left';
-    g.font = '700 34px system-ui, sans-serif'; g.fillText('Li-ion Polymer', 88, 210);
+  return canvasTex(784, 920, (g, w, h) => {
+    g.fillStyle = '#1d2026'; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 60; i++) {                          // vincos do invólucro
+      g.strokeStyle = `rgba(255,255,255,${0.02 + rand() * 0.04})`; g.lineWidth = 1 + rand() * 2;
+      g.beginPath(); const y = rand() * h; g.moveTo(0, y); g.bezierCurveTo(w * 0.3, y + (rand() - 0.5) * 40, w * 0.7, y + (rand() - 0.5) * 40, w, y + (rand() - 0.5) * 20); g.stroke();
+    }
+    const L = 60, T = 150, LW = w - 120, LH = 520;
+    g.fillStyle = '#d7dadd'; roundPath(g, L, T, LW, LH, 14); g.fill();
+    g.fillStyle = '#16181c'; g.fillRect(L, T, LW, 70);
+    g.fillStyle = '#f2b03d'; g.font = '700 38px system-ui, sans-serif'; g.textAlign = 'left';
+    g.fillText('Li-ion Polymer Battery', L + 24, T + 48);
+    g.fillStyle = '#1b1e23';
+    g.font = '600 30px ui-monospace, monospace';
+    g.fillText('Modelo: EB-CD141', L + 24, T + 124);
     g.font = '500 26px ui-monospace, monospace';
-    g.fillText('3,87 V  ·  5.000 mAh', 88, 262);
-    g.fillText('19,35 Wh', 88, 302);
-    g.font = '400 18px ui-monospace, monospace'; g.fillStyle = '#4a5058';
-    g.fillText('Não perfure · Não aqueça', 88, 360);
+    g.fillText('Nominal 3,87 V  5.000 mAh  19,35 Wh', L + 24, T + 168);
+    g.fillText('Carga limite 4,45 V', L + 24, T + 204);
+    g.fillText('Fabricação 2026/08 · Lote 26H14', L + 24, T + 240);
+    for (let i = 0; i < 46; i++) {                          // código de barras
+      const bw = 2 + Math.floor(rand() * 4); g.fillRect(L + 24 + i * 7.5, T + 280, bw, 90);
+    }
+    g.font = '400 18px ui-monospace, monospace'; g.fillText('8 806094 141262', L + 40, T + 396);
+    const qx = L + LW - 170, qy = T + 270;                  // QR
+    for (let yy = 0; yy < 21; yy++) for (let xx = 0; xx < 21; xx++) if (rand() < 0.5) g.fillRect(qx + xx * 6.5, qy + yy * 6.5, 6.5, 6.5);
+    for (const [ox, oy] of [[0, 0], [14, 0], [0, 14]]) { g.fillRect(qx + ox * 6.5, qy + oy * 6.5, 45, 45); g.fillStyle = '#d7dadd'; g.fillRect(qx + ox * 6.5 + 6.5, qy + oy * 6.5 + 6.5, 32, 32); g.fillStyle = '#1b1e23'; g.fillRect(qx + ox * 6.5 + 13, qy + oy * 6.5 + 13, 19, 19); }
+    let ix = L + 24;                                        // ícones de aviso
+    for (let k = 0; k < 5; k++, ix += 78) {
+      g.lineWidth = 4; g.strokeStyle = '#1b1e23';
+      g.beginPath(); g.arc(ix + 30, T + 460, 28, 0, 7); g.stroke();
+      if (k < 3) { g.beginPath(); g.moveTo(ix + 10, T + 440); g.lineTo(ix + 50, T + 480); g.stroke(); }
+      g.font = '700 22px system-ui'; g.textAlign = 'center'; g.fillText(['F', 'A', 'V', 'R', 'CE'][k], ix + 30, T + 468); g.textAlign = 'left';
+    }
+    g.font = '400 17px ui-monospace, monospace'; g.fillStyle = '#4a4f57';
+    g.fillText('Não desmonte, perfure ou aqueça acima de 60 °C.', L + 24, T + 512);
+  });
+}
+function inlayTexture(w, h) {
+  const px = 170;
+  return canvasTex(Math.round(w * px), Math.round(h * px), (g, W2, H2) => {
+    g.fillStyle = '#101112'; g.fillRect(0, 0, W2, H2);
+    for (let i = 0; i < 1800; i++) { g.fillStyle = `rgba(255,255,255,${rand() * 0.03})`; g.fillRect(rand() * W2, rand() * H2, 2, 2); }
+    const copper = (lw) => { g.lineWidth = lw; g.strokeStyle = '#c47d3c'; };
+    copper(7);                                                    // antena NFC: espiras retangulares na borda
+    for (let k = 0; k < 4; k++) { roundPath(g, 26 + k * 15, 26 + k * 15, W2 - 52 - k * 30, H2 * 0.9 - k * 30, 50); g.stroke(); }
+    const cx = W2 / 2, cy = H2 * 0.44, R0 = W2 * 0.33, R1 = W2 * 0.1, turns = 15, N = 3000;
+    const spiral = (col, lw, off) => {                            // bobina de carga: espiral de fio
+      g.strokeStyle = col; g.lineWidth = lw; g.beginPath();
+      for (let t = 0; t <= N; t++) {
+        const a = (t / N) * turns * Math.PI * 2, r = R0 - (R0 - R1) * (t / N) + off;
+        const x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
+        t ? g.lineTo(x, y) : g.moveTo(x, y);
+      }
+      g.stroke();
+    };
+    const pitch = (R0 - R1) / turns;
+    spiral('#8a4f22', pitch * 0.85, 0); spiral('#d9935a', pitch * 0.35, -pitch * 0.15); spiral('rgba(255,230,200,0.35)', 1.2, -pitch * 0.25);
+    const fe = g.createRadialGradient(cx, cy, 0, cx, cy, R1);
+    fe.addColorStop(0, '#3b3d40'); fe.addColorStop(1, '#202124');
+    g.fillStyle = fe; g.beginPath(); g.arc(cx, cy, R1 - pitch * 0.5, 0, 7); g.fill();
+    copper(10);                                                    // terminais
+    g.beginPath(); g.moveTo(cx + R0, cy); g.lineTo(cx + R0, H2 * 0.93); g.stroke();
+    g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx - R0 * 0.25, H2 * 0.93); g.stroke();
+    g.fillStyle = '#d6b25a';
+    for (let k = 0; k < 4; k++) g.fillRect(W2 * 0.3 + k * W2 * 0.12, H2 * 0.92, W2 * 0.07, H2 * 0.05);
+    g.fillStyle = 'rgba(235,238,240,0.8)'; g.font = `600 ${Math.round(W2 / 26)}px ui-monospace, monospace`;
+    g.fillText('WPC / NFC ANT', W2 * 0.08, H2 * 0.83);
+    g.font = `400 ${Math.round(W2 / 34)}px ui-monospace, monospace`;
+    g.fillText('GH42-CD141A  REV 0.3', W2 * 0.08, H2 * 0.87);
+  });
+}
+function flexTexture(w, h) {
+  const px = 200;
+  return canvasTex(Math.round(w * px), Math.round(h * px), (g, W2, H2) => {
+    g.fillStyle = '#c27a1c'; g.fillRect(0, 0, W2, H2);
+    for (let i = 0; i < 9; i++) {
+      g.strokeStyle = i % 3 ? 'rgba(120,64,10,0.55)' : 'rgba(255,200,120,0.35)'; g.lineWidth = 3;
+      const x = 12 + i * (W2 - 24) / 8; g.beginPath(); g.moveTo(x, 90); g.lineTo(x, H2 - 90); g.stroke();
+    }
+    g.fillStyle = '#121212'; g.fillRect(0, 0, W2, 70); g.fillRect(0, H2 - 70, W2, 70);
+    g.save(); g.translate(W2 / 2 + 8, H2 / 2); g.rotate(-Math.PI / 2);
+    g.fillStyle = 'rgba(250,245,235,0.85)'; g.font = '600 22px ui-monospace, monospace'; g.textAlign = 'center';
+    g.fillText('FPC MAIN-SUB  CD141  2614', 0, 0); g.restore();
+  });
+}
+function labelTexture(w, h, bg, fg, lines, opts = {}) {
+  const px = opts.px || 220;
+  return canvasTex(Math.round(w * px), Math.round(h * px), (g, W2, H2) => {
+    if (typeof bg === 'function') bg(g, W2, H2); else { g.fillStyle = bg; g.fillRect(0, 0, W2, H2); }
+    g.fillStyle = fg; g.textAlign = 'left';
+    lines.forEach((t, i) => {
+      g.font = `${i === 0 ? 600 : 400} ${Math.round(H2 / (i === 0 ? 7 : 10))}px ui-monospace, monospace`;
+      g.fillText(t, W2 * 0.08, H2 * 0.3 + i * H2 * 0.17);
+    });
+    if (opts.extra) opts.extra(g, W2, H2);
+  });
+}
+const brushedBg = (base) => (g, W2, H2) => {
+  g.fillStyle = base; g.fillRect(0, 0, W2, H2);
+  for (let i = 0; i < 700; i++) { g.fillStyle = `rgba(${rand() < 0.5 ? '255,255,255' : '0,0,0'},${rand() * 0.08})`; g.fillRect(rand() * W2, rand() * H2, 30 + rand() * 200, 1); }
+};
+function displayBackTexture(w, h) {
+  const px = 80;
+  return canvasTex(Math.round(w * px), Math.round(h * px), (g, W2, H2) => {
+    const cu = g.createLinearGradient(0, 0, W2, H2);
+    cu.addColorStop(0, '#c9874a'); cu.addColorStop(0.5, '#e0a36a'); cu.addColorStop(1, '#b8743a');
+    g.fillStyle = cu; g.fillRect(0, 0, W2, H2);
+    for (let i = 0; i < 80; i++) {                                   // dobras da folha de cobre
+      g.strokeStyle = `rgba(${rand() < 0.5 ? '255,230,200' : '90,45,10'},${0.05 + rand() * 0.08})`; g.lineWidth = 1 + rand() * 2;
+      g.beginPath(); const x = rand() * W2; g.moveTo(x, 0); g.lineTo(x + (rand() - 0.5) * 80, H2); g.stroke();
+    }
+    g.fillStyle = '#1a1b1d'; roundPath(g, W2 * 0.08, H2 * 0.06, W2 * 0.84, H2 * 0.62, 18); g.fill();   // grafite
+    for (let i = 0; i < 400; i++) { g.fillStyle = `rgba(255,255,255,${rand() * 0.04})`; g.fillRect(W2 * 0.08 + rand() * W2 * 0.84, H2 * 0.06 + rand() * H2 * 0.62, 2, 2); }
+    g.fillStyle = '#5b5f66'; g.fillRect(W2 * 0.12, H2 * 0.72, W2 * 0.3, H2 * 0.08); g.fillRect(W2 * 0.58, H2 * 0.72, W2 * 0.3, H2 * 0.08);  // espumas
+    g.fillStyle = '#c27a1c'; g.fillRect(W2 * 0.36, H2 * 0.84, W2 * 0.28, H2 * 0.16);                        // flex do display
+    g.fillStyle = '#111'; g.fillRect(W2 * 0.4, H2 * 0.93, W2 * 0.2, H2 * 0.05);
+    g.fillStyle = 'rgba(240,240,240,0.85)'; g.font = `600 ${Math.round(W2 / 22)}px ui-monospace, monospace`; g.textAlign = 'center';
+    g.fillText('NÃO PRESSIONE', W2 / 2, H2 * 0.3);
+    g.font = `400 ${Math.round(W2 / 30)}px ui-monospace, monospace`;
+    g.fillText('AMOLED 6.7" LTPO  ·  CD141-DSP', W2 / 2, H2 * 0.35);
+  });
+}
+function backInnerTexture(w, h) {
+  const px = 80;
+  return canvasTex(Math.round(w * px), Math.round(h * px), (g, W2, H2) => {
+    g.fillStyle = '#272c35'; g.fillRect(0, 0, W2, H2);
+    g.strokeStyle = 'rgba(225,222,210,0.85)'; g.lineWidth = px * 0.22;                  // adesivo da tampa
+    roundPath(g, px * 0.18, px * 0.18, W2 - px * 0.36, H2 - px * 0.36, px * 0.85); g.stroke();
+    const cx = (w / 2 - 2.0) * px, cy = (h / 2 - 5.8) * px;                           // recorte da ilha (vista de dentro: espelhada)
+    g.fillStyle = '#0d0f12'; roundPath(g, W2 - cx - 1.45 * px, cy - 1.45 * px, 2.9 * px, 2.9 * px, 0.7 * px); g.fill();
+    g.fillStyle = '#3a3f48'; roundPath(g, W2 * 0.2, H2 * 0.42, W2 * 0.6, H2 * 0.34, 20); g.fill();   // área do inlay
+    g.fillStyle = '#b07a3a'; g.fillRect(W2 * 0.1, H2 * 0.8, W2 * 0.8, px * 0.12);                  // fita de cobre
+    g.fillStyle = 'rgba(230,230,230,0.7)'; g.font = `500 ${Math.round(px * 0.22)}px ui-monospace, monospace`; g.textAlign = 'center';
+    g.fillText('BACK COVER ASSY · CD141', W2 / 2, H2 * 0.88);
+    g.fillText('GH82-CD141B', W2 / 2, H2 * 0.91);
   });
 }
 
@@ -875,25 +954,27 @@ const FRAME_COLOR = 0x9a9ea4;
   island.position.set(-2.0, 5.8, -0.06); g.add(island);
   const engraving = mesh(new THREE.PlaneGeometry(3.4, 1.06), new THREE.MeshStandardMaterial({ map: backTextTexture(), transparent: true, roughness: 0.6 }));
   engraving.rotation.y = Math.PI; engraving.position.set(0, -5.6, -0.032); g.add(engraving);
+  const inside = mesh(new THREE.PlaneGeometry(W - 0.3, H - 0.3), new THREE.MeshStandardMaterial({ map: backInnerTexture(W - 0.3, H - 0.3), roughness: 0.7 }));
+  inside.position.z = 0.032; g.add(inside);
   addPart('tampa', g, v(0, 0, -0.42), v(0, 0, -5.4));
 }
 
 // Bobina de carga sem fio
 {
   const g = new THREE.Group();
-  g.add(mesh(new THREE.CircleGeometry(1.75, 64), mat(0x1c1c1f, { roughness: 0.8, side: THREE.DoubleSide })));
-  for (let i = 0; i < 7; i++) {
-    const t = mesh(new THREE.TorusGeometry(0.62 + i * 0.16, 0.05, 8, 96), mat(0xc07a3e, { metalness: 1, roughness: 0.28 }));
-    t.scale.z = 0.5; t.position.z = 0.025;
-    g.add(t);
-  }
-  addPart('bobina', g, v(0, -1.4, -0.36), v(0, 0, -4.0));
+  const IW = 4.4, IH = 5.2, tex = inlayTexture(IW, IH);
+  const sheet = new THREE.MeshPhysicalMaterial({ map: fitTex(tex, IW, IH), metalness: 0.35, roughness: 0.45, clearcoat: 0.6, clearcoatRoughness: 0.2, side: THREE.DoubleSide });
+  g.add(mesh(slab(IW, IH, 0.3, 0.03), sheet));
+  addPart('bobina', g, v(0, -1.4, -0.365), v(0, 0, -4.0));
 }
 
 // Câmeras traseiras
 {
   const g = new THREE.Group();
-  g.add(mesh(slab(2.4, 2.4, 0.55, 0.14), mat(0x2b2f36, { metalness: 0.6, roughness: 0.35 })));
+  g.add(mesh(slab(2.4, 2.4, 0.55, 0.14), new THREE.MeshStandardMaterial({
+    map: fitTex(labelTexture(2.4, 2.4, brushedBg('#2b2f36'), '#b9bec4', ['CAM MODULE', '50M OIS · 12M UW', '12M TELE 3x', 'CD141-CAM 2613'], {
+      px: 200, extra: (g, w, h) => { g.fillStyle = '#d6b25a'; for (let k = 0; k < 3; k++) g.fillRect(w * 0.12 + k * w * 0.27, h * 0.82, w * 0.18, h * 0.08); } }), 2.4, 2.4),
+    metalness: 0.6, roughness: 0.38 })));
   for (const [x, y, r] of [[-0.52, 0.52, 0.44], [-0.52, -0.52, 0.4], [0.55, 0.0, 0.4]]) {
     const ring = cyl(r, 0.5, 0xb7bcc4, titanium); ring.position.set(x, y, -0.12); g.add(ring);
     const barrel = cyl(r - 0.07, 0.52, 0x0b0d10, { metalness: 0.5, roughness: 0.4 }); barrel.position.set(x, y, -0.12); g.add(barrel);
@@ -926,9 +1007,9 @@ const FRAME_COLOR = 0x9a9ea4;
   const brushed = brushedMaps();
   g.add(mesh(frameGeometry(W, H, R, 0.16, 0.8, 0.14),
     new THREE.MeshPhysicalMaterial({
-      color: 0xd9d6d0, map: brushed.map, roughnessMap: brushed.rough, roughness: 1, metalness: 1,
-      bumpMap: brushed.rough, bumpScale: 0.25,
-      anisotropy: 0.85, anisotropyRotation: 0,          // reflexo esticado na direção do escovado
+      color: 0xcfc9c0, map: brushed.map, roughnessMap: brushed.rough, roughness: 0.85, metalness: 1,
+      bumpMap: brushed.rough, bumpScale: 0.15,
+      anisotropy: 0.6, anisotropyRotation: 0,           // reflexo esticado na direção do escovado
       clearcoat: 0.25, clearcoatRoughness: 0.35 })));
   const bandM = mat(0x2e3135, { roughness: 0.6 });
   for (const x of [-1, 1]) for (const y of [-5.6, 5.4]) {
@@ -973,7 +1054,7 @@ addPart('armazenamento', mesh(slab(1.15, 0.85, 0.05, 0.1), new THREE.MeshStandar
 addPart('subplaca', circuitBoard(6.0, 1.4, 31, [[-0.4, 0, 1.0, 0.8]]), v(0, -6.2, -0.05), v(0, 0, 1.0));
 {
   const g = new THREE.Group();
-  const ribbon = mesh(slab(0.55, 7.9, 0.08, 0.02), mat(0xb7741a, { roughness: 0.35, metalness: 0.1, transparent: true, opacity: 0.92 }));
+  const ribbon = mesh(slab(0.55, 7.9, 0.08, 0.02), new THREE.MeshPhysicalMaterial({ map: fitTex(flexTexture(0.55, 7.9), 0.55, 7.9), roughness: 0.3, metalness: 0.1, clearcoat: 0.8 }));
   g.add(ribbon);
   for (const y of [3.75, -3.75]) {
     const con = mesh(new THREE.BoxGeometry(0.7, 0.45, 0.08), mat(0x1a1b1d, { roughness: 0.5 })); con.position.set(0, y, 0.03); g.add(con);
@@ -1004,12 +1085,14 @@ addPart('subplaca', circuitBoard(6.0, 1.4, 31, [[-0.4, 0, 1.0, 0.8]]), v(0, -6.2
 // Alto-falante principal e motor de vibração
 {
   const g = new THREE.Group();
-  g.add(mesh(slab(1.9, 1.0, 0.2, 0.26, { bevel: 0.03 }), mat(0x18191b, { roughness: 0.7 })));
-  const grille = mesh(new THREE.PlaneGeometry(1.4, 0.6), new THREE.MeshStandardMaterial({ map: grilleTexture(), roughness: 0.8, metalness: 0.4 }));
-  grille.position.z = 0.132; g.add(grille);
+  g.add(mesh(slab(1.9, 1.0, 0.2, 0.26, { bevel: 0.03 }), new THREE.MeshStandardMaterial({
+    map: fitTex(labelTexture(1.9, 1.0, '#18191b', '#9aa0a6', ['SPK BOX', '8 Ω · 1,2 W', 'CD141-SPK']), 1.9, 1.0), roughness: 0.7 })));
+  const grille = mesh(new THREE.PlaneGeometry(0.75, 0.6), new THREE.MeshStandardMaterial({ map: grilleTexture(), roughness: 0.8, metalness: 0.4 }));
+  grille.position.set(0.5, 0, 0.132); g.add(grille);
   addPart('altofalante', g, v(2.2, -6.2, 0.15), v(0, 0, 2.4));
 }
-addPart('vibracao', mesh(slab(1.6, 0.7, 0.25, 0.26, { bevel: 0.03 }), mat(0xb3b8be, { metalness: 0.9, roughness: 0.35 })), v(-2.2, -6.2, 0.15), v(0, 0, 2.4));
+addPart('vibracao', mesh(slab(1.6, 0.7, 0.25, 0.26, { bevel: 0.03 }), new THREE.MeshStandardMaterial({
+  map: fitTex(labelTexture(1.6, 0.7, brushedBg('#b9bec4'), '#3c4148', ['LRA X-AXIS', '1,8 V · 170 Hz', 'VC-0816 2612']), 1.6, 0.7), metalness: 0.85, roughness: 0.35 })), v(-2.2, -6.2, 0.15), v(0, 0, 2.4));
 
 // Câmera frontal e auricular
 {
@@ -1018,7 +1101,7 @@ addPart('vibracao', mesh(slab(1.6, 0.7, 0.25, 0.26, { bevel: 0.03 }), mat(0xb3b8
   const lens = cyl(0.15, 0.25, 0x04060a, { roughness: 0.05, metalness: 0.4 }); g.add(lens);
   addPart('frontal', g, v(0, 6.8, 0.17), v(0, 0, 3.4));
 }
-addPart('auricular', mesh(slab(1.5, 0.24, 0.1, 0.12), mat(0x3b3f45, { metalness: 0.5, roughness: 0.5 })), v(0, 7.18, 0.2), v(0, 0, 3.4));
+addPart('auricular', mesh(slab(1.5, 0.24, 0.1, 0.12), new THREE.MeshStandardMaterial({ map: fitTex(grilleTexture(), 1.5, 0.24), metalness: 0.5, roughness: 0.5 })), v(0, 7.18, 0.2), v(0, 0, 3.4));
 
 // Tela e vidro
 {
@@ -1027,6 +1110,8 @@ addPart('auricular', mesh(slab(1.5, 0.24, 0.1, 0.12), mat(0x3b3f45, { metalness:
   const screen = mesh(new THREE.PlaneGeometry(6.66, 14.3),
     new THREE.MeshBasicMaterial({ map: screenTexture(), transparent: true, toneMapped: false }));
   screen.position.z = 0.042; g.add(screen);
+  const back = mesh(new THREE.PlaneGeometry(W - 0.6, H - 0.6), new THREE.MeshStandardMaterial({ map: displayBackTexture(W - 0.6, H - 0.6), metalness: 0.55, roughness: 0.45 }));
+  back.rotation.y = Math.PI; back.position.z = -0.042; g.add(back);
   addPart('tela', g, v(0, 0, 0.34), v(0, 0, 4.6));
 }
 addPart('vidro', mesh(slab(W - 0.2, H - 0.2, R - 0.1, 0.07, { bevel: 0.03 }),
@@ -1172,7 +1257,7 @@ for (const p of [...parts].reverse()) {
   b.append(p.info.nome);
   const tag = document.createElement('span');
   tag.textContent = p.info.cat;
-  if (PRECOS[p.id]) { const g = document.createElement('b'); g.textContent = ' · preços'; tag.append(g); }
+  if (PRECOS[p.id]?.vistas.length) { const g = document.createElement('b'); g.textContent = ' · preços'; tag.append(g); }
   b.append(tag);
   b.addEventListener('click', () => { if (!exploded) explode(true); select(p); });
   li.appendChild(b); items.appendChild(li);
@@ -1233,8 +1318,9 @@ function showPrice(id) {
     sw.appendChild(b);
   }
   $('p-title').textContent = cfg.titulo;
-  $('p-unit').textContent = cfg.unidade;
-  $('p-note').textContent = cfg.nota;
+  $('p-unit').textContent = cfg.unidade || '';
+  $('p-note').textContent = cfg.nota || '';
+  $('p-note').hidden = !cfg.nota;
   if (priceView >= cfg.vistas.length) priceView = 0;
   const tabs = $('p-tabs');
   tabs.replaceChildren();
@@ -1246,23 +1332,44 @@ function showPrice(id) {
     b.addEventListener('click', () => { priceView = i; showPrice(id); });
     tabs.appendChild(b);
   });
-  drawChart(cfg, cfg.vistas[priceView]);
+  drawChart(cfg, cfg.vistas[priceView] || { series: [], naoEncontrado: cfg.naoEncontrado });
+}
+
+function notFound(text, big) {
+  const d = document.createElement('div');
+  d.className = big ? 'nf nf-big' : 'nf';
+  const t = document.createElement('strong'); t.textContent = big ? 'Preço não encontrado' : 'Não encontrado: ';
+  d.append(t, big ? document.createElement('br') : '', text);
+  return d;
 }
 
 function drawChart(cfg, view) {
   const box = $('p-chart'); box.replaceChildren();
+  const leg = $('p-legend'); leg.replaceChildren();
+  const keyBox = $('p-key'); keyBox.replaceChildren();
+  const rd = $('p-read');
+  const series = view.series.filter((s) => s.pontos.some(Boolean));
+  if (!series.length) {
+    box.appendChild(notFound(view.naoEncontrado || 'Nenhum número publicado para este grupo.', true));
+    rd.hidden = true; $('p-unit').hidden = true;
+    return;
+  }
+  rd.hidden = false; $('p-unit').hidden = false;
+
   const Wd = 360, Ht = 220, m = { l: 40, r: 12, t: 12, b: 26 };
   const n = cfg.x.length;
-  const vals = [];
-  view.series.forEach((s) => s.pontos.forEach((p) => { if (p) vals.push(p.max ?? p.y, p.min ?? p.y); }));
-  const hi = Math.max(...vals), step = niceStep(hi);
-  const ymax = Math.ceil((hi * 1.05) / step) * step;
+  const vals = [0];
+  series.forEach((s) => s.pontos.forEach((p) => { if (p) vals.push(p.max ?? p.y, p.min ?? p.y); }));
+  const hi = Math.max(...vals), lo = Math.min(...vals);
+  const step = niceStep(hi - lo);
+  const ymax = Math.ceil((hi + (hi - lo) * 0.04) / step) * step;
+  const ymin = lo < 0 ? Math.floor(lo / step) * step : 0;
   const X = (i) => m.l + (i * (Wd - m.l - m.r)) / (n - 1);
-  const Y = (y) => m.t + (1 - y / ymax) * (Ht - m.t - m.b);
+  const Y = (y) => m.t + (1 - (y - ymin) / (ymax - ymin)) * (Ht - m.t - m.b);
 
-  const svg = svgEl('svg', { viewBox: `0 0 ${Wd} ${Ht}`, role: 'img', 'aria-label': `${cfg.titulo}: ${view.nome}` }, box);
-  for (let t = 0; t <= ymax + 1e-9; t += step) {
-    svgEl('line', { x1: m.l, x2: Wd - m.r, y1: Y(t), y2: Y(t), class: 'grid' }, svg);
+  const svg = svgEl('svg', { viewBox: `0 0 ${Wd} ${Ht}`, role: 'img', 'aria-label': `${cfg.titulo}: ${view.nome || ''}` }, box);
+  for (let t = ymin; t <= ymax + 1e-9; t += step) {
+    svgEl('line', { x1: m.l, x2: Wd - m.r, y1: Y(t), y2: Y(t), class: 'grid', 'stroke-width': Math.abs(t) < 1e-9 && ymin < 0 ? 2 : 1 }, svg);
     const lab = svgEl('text', { x: m.l - 6, y: Y(t) + 3.5, 'text-anchor': 'end' }, svg);
     lab.textContent = fmt(t);
   }
@@ -1274,81 +1381,60 @@ function drawChart(cfg, view) {
   });
 
   const pts = [];
-  view.series.forEach((s, si) => {
+  series.forEach((s, si) => {
     const color = COLORS[si % COLORS.length];
-    // linhas: sólida entre dois dados publicados, tracejada se algum ponto for exemplo
     let prev = null;
     s.pontos.forEach((p, i) => {
-      if (!p) { prev = null; return; }
-      if (prev) {
-        svgEl('line', { x1: X(prev.i), y1: Y(prev.p.y), x2: X(i), y2: Y(p.y), stroke: color, 'stroke-width': 2,
-          'stroke-dasharray': prev.p.ex || p.ex ? '5 4' : 'none', 'stroke-linecap': 'round', opacity: prev.p.ex || p.ex ? 0.75 : 1 }, svg);
-      }
+      if (!p) { prev = null; return; }          // sem número: a linha é interrompida
+      if (prev) svgEl('line', { x1: X(prev.i), y1: Y(prev.p.y), x2: X(i), y2: Y(p.y), stroke: color, 'stroke-width': 2, 'stroke-linecap': 'round' }, svg);
       prev = { p, i };
     });
     s.pontos.forEach((p, i) => {
       if (!p) return;
-      if (p.min != null && p.max != null) {
+      if (p.min != null && p.max != null && p.min !== p.max) {
         svgEl('line', { x1: X(i), x2: X(i), y1: Y(p.min), y2: Y(p.max), stroke: color, 'stroke-width': 6, opacity: 0.28, 'stroke-linecap': 'round' }, svg);
       }
       pts.push({ s, si, p, i, color });
     });
   });
-  // pontos por cima das linhas, com área de toque maior
   pts.forEach((d) => {
     const g = svgEl('g', { class: 'pt', tabindex: 0, role: 'button', 'aria-label': describe(cfg, d) }, svg);
     svgEl('circle', { cx: X(d.i), cy: Y(d.p.y), r: 11, class: 'hit' }, g);
-    svgEl('circle', { cx: X(d.i), cy: Y(d.p.y), r: d.p.ex ? 3.6 : 4.2,
-      fill: d.p.ex ? 'var(--mat)' : d.color, stroke: d.color, 'stroke-width': d.p.ex ? 1.6 : 0 }, g);
+    svgEl('circle', { cx: X(d.i), cy: Y(d.p.y), r: 4.2, fill: d.color }, g);
     const act = () => readout(cfg, d);
     g.addEventListener('click', act);
     g.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); act(); } });
   });
 
-  // legenda
-  const leg = $('p-legend'); leg.replaceChildren();
-  view.series.forEach((s, si) => {
-    const color = COLORS[si % COLORS.length];
-    const real = s.pontos.filter((p) => p && !p.ex).length, total = s.pontos.filter(Boolean).length;
+  series.forEach((s, si) => {
     const li = document.createElement('li');
     const sw = svgEl('svg', { width: 22, height: 10, 'aria-hidden': 'true' });
-    svgEl('line', { x1: 1, x2: 21, y1: 5, y2: 5, stroke: color, 'stroke-width': 2.5, 'stroke-dasharray': real === total ? 'none' : '5 3' }, sw);
+    svgEl('line', { x1: 1, x2: 21, y1: 5, y2: 5, stroke: COLORS[si % COLORS.length], 'stroke-width': 2.5 }, sw);
     li.append(sw, s.nome);
-    if (real < total) { const e2 = document.createElement('em'); e2.textContent = real ? '(parte exemplo)' : '(exemplo)'; li.append(e2); }
     leg.appendChild(li);
   });
 
-  // chave de leitura
-  const anyEx = pts.some((d) => d.p.ex), anyReal = pts.some((d) => !d.p.ex), anyRange = pts.some((d) => d.p.min != null);
-  const keyBox = $('p-key'); keyBox.replaceChildren();
   const keyItem = (svgFn, label) => {
     const sp = document.createElement('span');
     const sw = svgEl('svg', { width: 12, height: 12, 'aria-hidden': 'true' }); svgFn(sw);
     sp.append(sw, label); keyBox.appendChild(sp);
   };
-  if (anyReal) keyItem((s) => svgEl('circle', { cx: 6, cy: 6, r: 4, fill: 'var(--ink)' }, s), 'dado publicado');
-  if (anyEx) keyItem((s) => svgEl('circle', { cx: 6, cy: 6, r: 3.5, fill: 'none', stroke: 'var(--ink)', 'stroke-width': 1.5 }, s), 'valor de exemplo, não é preço real');
-  if (anyRange) keyItem((s) => svgEl('line', { x1: 6, x2: 6, y1: 1, y2: 11, stroke: 'var(--ink)', 'stroke-width': 5, opacity: 0.35 }, s), 'faixa estimada');
+  keyItem((s) => svgEl('circle', { cx: 6, cy: 6, r: 4, fill: 'var(--ink)' }, s), 'número publicado');
+  if (pts.some((d) => d.p.min != null && d.p.min !== d.p.max)) keyItem((s) => svgEl('line', { x1: 6, x2: 6, y1: 1, y2: 11, stroke: 'var(--ink)', 'stroke-width': 5, opacity: 0.35 }, s), 'faixa estimada');
+  if (series.some((s) => s.pontos.some((p) => !p))) keyItem((s) => svgEl('line', { x1: 1, x2: 11, y1: 6, y2: 6, stroke: 'var(--ink)', 'stroke-width': 1.5, 'stroke-dasharray': '2 2' }, s), 'linha interrompida = não encontrado');
+  if (view.naoEncontrado) box.appendChild(notFound(view.naoEncontrado, false));
 
-  const rd = $('p-read');
   rd.textContent = 'Toque num ponto do gráfico para ver o valor e a fonte.';
 }
 
 function describe(cfg, d) {
-  const val = d.p.ex ? `${fmt(d.p.y)} (exemplo)` : (d.p.txt || fmt(d.p.y));
-  return `${d.s.nome}${d.p.m && !d.p.ex ? ', ' + d.p.m : ''}, ${cfg.x[d.i]}: ${val}`;
+  return `${d.s.nome}${d.p.m ? ', ' + d.p.m : ''}, ${cfg.x[d.i]}: ${d.p.txt || fmt(d.p.y)}`;
 }
 function readout(cfg, d) {
   const rd = $('p-read'); rd.replaceChildren();
   const title = document.createElement('strong');
-  title.textContent = (d.p.m && !d.p.ex) ? d.p.m : d.s.nome;
-  rd.append(title, ` · ${cfg.x[d.i]}`, document.createElement('br'));
-  if (d.p.ex) {
-    const tag = document.createElement('span'); tag.className = 'ex'; tag.textContent = 'Exemplo';
-    rd.append(tag, ` ${fmt(d.p.y)}${d.p.m ? ' · ' + d.p.m : ''}. Valor ilustrativo, sem fonte.`);
-    return;
-  }
-  rd.append(d.p.txt || fmt(d.p.y));
+  title.textContent = d.p.m || d.s.nome;
+  rd.append(title, ` · ${cfg.x[d.i]}`, document.createElement('br'), d.p.txt || fmt(d.p.y));
   const f = FONTES[d.p.f];
   if (f) {
     rd.append(document.createElement('br'), 'Fonte: ');
